@@ -44,6 +44,17 @@ docker run --rm -p 3000:3000 gate-mentor:phase1
 
 Health: `GET /api/health` returns `{ status: "ok" }` with `no-store`.
 
+## Database (local)
+
+```bash
+docker compose up -d db              # postgres:17 on localhost:5432
+DATABASE_URL=postgresql://gate:gate@localhost:5432/gate_mentor npm run db:migrate
+DATABASE_URL=postgresql://gate:gate@localhost:5432/gate_mentor npm run db:seed
+```
+
+The seed is idempotent — rerun it any time. Point `DATABASE_URL` at Neon
+(or set `USE_NEON=true`) for hosted. See `docs/data-model.md`.
+
 ## Docs
 
 - `plan.md` — product + engineering source of truth
