@@ -17,7 +17,11 @@ export function getSecurityHeaders(isProduction: boolean): Record<string, string
       // still blocks all third-party/external scripts, which is the real
       // threat for this app. Nonce-based scripts would need framework
       // support that Next.js doesn't offer for its flight payloads.
-      "script-src 'self' 'unsafe-inline'",
+      //
+      // React/Turbopack also need 'unsafe-eval' for dev-mode debugging
+      // (source maps, stack reconstruction). Production React never uses
+      // eval, so it stays out of the production policy below.
+      `script-src 'self' 'unsafe-inline'${isProduction ? "" : " 'unsafe-eval'"}`,
       "style-src 'self' 'unsafe-inline'",
       "font-src 'self' data:",
       "img-src 'self' data: blob:",
