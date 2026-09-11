@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { requireUserId } from "@/lib/current-user";
+import { signOut } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
 
 const NAV = [
   { href: "/practice", label: "Practice" },
@@ -7,11 +10,15 @@ const NAV = [
   { href: "/bookmarks", label: "Bookmarks" },
 ];
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Everything under here needs an account. Signed-out visitors go to
+  // sign-in; specific data scoping happens per query in lib/ownership.ts.
+  await requireUserId();
+
   return (
     <div className="flex min-h-full flex-col bg-background text-foreground">
       <a
@@ -40,6 +47,18 @@ export default function DashboardLayout({
                   </Link>
                 </li>
               ))}
+              <li>
+                <form
+                  action={async () => {
+                    "use server";
+                    await signOut({ redirectTo: "/" });
+                  }}
+                >
+                  <Button type="submit" variant="ghost" size="sm">
+                    Sign out
+                  </Button>
+                </form>
+              </li>
             </ul>
           </nav>
         </div>
