@@ -62,7 +62,16 @@ export function ChatThread({
 }) {
   const router = useRouter();
   const [messages, setMessages] = useState<ThreadMessage[]>(initial);
+  // The draft is kept in a ref for logic and mirrored to state for
+  // rendering. All updates are plain value writes — nothing nests one
+  // state update inside another, so double-invoked updaters can't
+  // duplicate messages.
+  const draftRef = useRef<ThreadMessage | null>(null);
   const [draft, setDraft] = useState<ThreadMessage | null>(null);
+  const writeDraft = (next: ThreadMessage | null) => {
+    draftRef.current = next;
+    setDraft(next);
+  };
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -83,7 +92,7 @@ export function ChatThread({
       setMessages((m) => [...m, { id: newId(), role: "user", content: trimmed }]);
     }
     const draftId = newId();
-    setDraft({ id: draftId, role: "assistant", content: "" });
+    writeDraft({ id: draftId, role: "assistant", content: "" });
     setStreaming(true);
     const controller = new AbortController();
     abortRef.current = controller;
@@ -104,34 +113,35 @@ export function ChatThread({
           // Keep the generic hint.
         }
         setError(hint);
-        setDraft(null);
+        writeDraft(null);
         return;
       }
       for await (const chunk of readUIChunks(res.body)) {
         const c = chunk as { type?: string; delta?: unknown; errorText?: unknown };
         if (c.type === "text-delta" && typeof c.delta === "string") {
-          const delta = c.delta;
-          setDraft((d) => (d ? { ...d, content: d.content + delta } : d));
+          const current: ThreadMessage | null = draftRef.current;
+          if (current) {
+            writeDraft({ ...current, content: current.content + c.delta });
+          }
         } else if (c.type === "error") {
           throw new Error("Mentor hit a snag mid-reply.");
         }
       }
-      setDraft((d) => {
-        if (d) setMessages((m) => [...m, d]);
-        return null;
-      });
+      const finished = draftRef.current;
+      writeDraft(null);
+      if (finished) setMessages((m) => [...m, finished]);
     } catch (e) {
       if (e instanceof DOMException && e.name === "AbortError") {
-        setDraft((d) => {
-          if (d) setMessages((m) => [...m, { ...d, stopped: true }]);
-          return null;
-        });
+        const stopped = draftRef.current;
+        writeDraft(null);
+        if (stopped) setMessages((m) => [...m, { ...stopped, stopped: true }]);
       } else {
         setError("Something interrupted that reply. Retry below — nothing was lost.");
-        setDraft((d) => {
-          if (d && d.content !== "") setMessages((m) => [...m, d]);
-          return null;
-        });
+        const partial = draftRef.current;
+        writeDraft(null);
+        if (partial && partial.content !== "") {
+          setMessages((m) => [...m, partial]);
+        }
       }
     } finally {
       setStreaming(false);
