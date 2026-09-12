@@ -26,8 +26,8 @@ Local: PostgreSQL 16/17 container. Hosted: Neon. Single Drizzle adapter with `DA
 ### 5. Auth: `next-auth@5.0.0-beta.32` (Auth.js v5), Google OAuth only
 `latest` stable is 4.24.15; v5 is still beta (`beta: 5.0.0-beta.32`). Required by plan. Risk accepted: beta API may shift; pin exact `5.0.0-beta.32`, follow Auth.js v5 docs (`auth.ts`, `handlers`, `auth()` helper), JWT or DB sessions via Drizzle adapter (decide in Phase 3 — recommend DB sessions for ownership joins). Google only for MVP.
 
-### 6. AI: `ai@^6.0.0` (pin `6.0.280` line) + `@ai-sdk/groq@^4.0.0`
-`ai` dist-tags: `latest 7.0.97`, `ai-v6 6.0.280`, `ai-v5 5.0.255`. Plan mandates v6 — stick to v6 to avoid v7 churn. Streaming API (v6): `streamText({ model, system, messages })` → `toUIMessageStreamResponse()` / `toTextStreamResponse()`, client `useChat` + transports, `convertToModelMessages`. Do NOT invent custom SSE protocol. Re-verify helper names at Phase 6 implementation time against installed version.
+### 6. AI: `ai@^6.0.0` (pin `6.0.28x` line) + `@ai-sdk/groq@^3.0.0`
+`ai` dist-tags: `latest 7.0.97`, `ai-v6 6.0.280`, `ai-v5 5.0.255`. Plan mandates v6 — stick to v6 to avoid v7 churn. Pairing note (found by typecheck): `@ai-sdk/groq@4` emits spec-v4 models that `ai@6` rejects; the v6-compatible line is `@ai-sdk/groq@3` (3.0.66). Streaming API (v6): `streamText({ model, system, messages })` → `toUIMessageStream()` / `toUIMessageStreamResponse()` / `toTextStreamResponse()`, client `useChat` + transports, `convertToModelMessages`. Do NOT invent custom SSE protocol. Re-verify helper names at Phase 6 implementation time against installed version.
 
 ### 7. Groq models — VERIFIED live docs 2026
 - Primary `openai/gpt-oss-20b`: production, ~1000 tps, 131,072 ctx, 65,536 max output, $0.075 in / $0.30 out per 1M, dev limits 250K TPM / 1K RPM.
