@@ -1,7 +1,7 @@
 import "server-only";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { chatMessages, chatSessions, questions } from "@/db/schema";
+import { chatMessages, chatSessions, questions, subjects, topics } from "@/db/schema";
 import { buildQuestionContext, buildTopicContext } from "./prompts/context-builder";
 import {
   MENTOR_PROMPT_VERSION,
@@ -95,6 +95,65 @@ export async function getOwnedSession(userId: string, sessionId: string) {
   return rows[0] ?? null;
 }
 
+export type SessionSourceInfo =
+  | {
+      kind: "question";
+      href: string;
+      heading: string;
+      detail: string;
+    }
+  | {
+      kind: "topic";
+      href: string;
+      heading: string;
+      detail: string;
+    }
+  | null;
+
+/** Small banner data for the source panel. Never includes answers. */
+export async function getSessionSourceInfo(
+  session: NonNullable<Awaited<ReturnType<typeof getOwnedSession>>>,
+): Promise<SessionSourceInfo> {
+  if (session.sourceQuestionId) {
+    const rows = await db
+      .select({
+        prompt: questions.prompt,
+        subjectName: subjects.name,
+        topicName: topics.name,
+      })
+      .from(questions)
+      .innerJoin(subjects, eq(questions.subjectId, subjects.id))
+      .innerJoin(topics, eq(questions.topicId, topics.id))
+      .where(eq(questions.id, session.sourceQuestionId))
+      .limit(1);
+    const q = rows[0];
+    if (!q) return null;
+    return {
+      kind: "question",
+      href: `/practice/${session.sourceQuestionId}`,
+      heading: `${q.subjectName} · ${q.topicName}`,
+      detail: q.prompt.length > 140 ? `${q.prompt.slice(0, 137).trimEnd()}…` : q.prompt,
+    };
+  }
+  if (session.sourceTopicId) {
+    const rows = await db
+      .select({ name: topics.name, subjectName: subjects.name, subjectSlug: subjects.slug, topicSlug: topics.slug })
+      .from(topics)
+      .innerJoin(subjects, eq(topics.subjectId, subjects.id))
+      .where(eq(topics.id, session.sourceTopicId))
+      .limit(1);
+    const t = rows[0];
+    if (!t) return null;
+    return {
+      kind: "topic",
+      href: `/practice?subject=${t.subjectSlug}&topic=${t.topicSlug}`,
+      heading: `Revising ${t.subjectName} · ${t.name}`,
+      detail: "Mentor has your accuracy and recent misses for this topic.",
+    };
+  }
+  return null;
+}
+
 export async function getSessionMessages(sessionId: string, limit = 100) {
   return db
     .select({
@@ -119,6 +178,29 @@ export async function saveUserMessage(sessionId: string, content: string) {
     .values({ sessionId, role: "user", content })
     .returning();
   return inserted[0]!.id;
+}
+
+/**
+ * True when this send repeats the latest user message: identical text to
+ * the most recent user row. Retries reuse that row and append a fresh
+ * reply instead of stacking duplicates. Anything with different text is
+ * always stored as its own message.
+ */
+export async function isRetrySend(
+  sessionId: string,
+  message: string,
+): Promise<boolean> {
+  const recent = await db
+    .select({
+      role: chatMessages.role,
+      content: chatMessages.content,
+    })
+    .from(chatMessages)
+    .where(eq(chatMessages.sessionId, sessionId))
+    .orderBy(desc(chatMessages.createdAt))
+    .limit(5);
+  const latestUser = recent.find((m) => m.role === "user");
+  return latestUser?.content === message;
 }
 
 export async function saveAssistantMessage(args: {

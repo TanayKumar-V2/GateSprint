@@ -4,6 +4,7 @@ import { currentUserId } from "@/lib/current-user";
 import {
   buildGenerationInput,
   getOwnedSession,
+  isRetrySend,
   maybeTitleSession,
   saveAssistantMessage,
   saveUserMessage,
@@ -107,7 +108,12 @@ export async function POST(request: Request) {
     );
   }
 
-  await saveUserMessage(session.id, parsed.data.message);
+  // Retry/regenerate sends the same text again: reuse the existing user
+  // message instead of stacking a duplicate, then append a fresh reply.
+  // Anything new is always stored as its own message.
+  if (!(await isRetrySend(session.id, parsed.data.message))) {
+    await saveUserMessage(session.id, parsed.data.message);
+  }
   await maybeTitleSession(userId, session.id, parsed.data.message);
 
   const input = await buildGenerationInput(userId, session.id);
