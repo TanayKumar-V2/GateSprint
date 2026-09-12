@@ -5,6 +5,7 @@ import { getQuestionView } from "@/lib/questions";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { QuestionSolver } from "@/components/practice/solver";
+import { AskMentorButton } from "@/components/practice/ask-mentor-button";
 import { MathText } from "@/components/markdown/math-text";
 import { cn } from "@/lib/utils";
 
@@ -58,15 +59,10 @@ export default async function QuestionPage({
       <QuestionSolver view={view} />
 
       <footer className="flex flex-wrap items-center gap-3 border-t pt-4">
-        <Link
-          href="/mentor"
-          className={cn(buttonVariants({ variant: "outline" }))}
-        >
-          Ask Mentor about this
-        </Link>
+        <AskMentorButton questionId={view.id} />
         <p className="text-xs text-muted-foreground">
-          Full question context travels with you soon — for now it opens a
-          fresh chat.
+          Opens a chat already briefed on this question, your answer, and
+          the solution — just ask your follow-up.
         </p>
       </footer>
     </div>
