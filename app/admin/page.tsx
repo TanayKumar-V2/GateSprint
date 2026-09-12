@@ -1,12 +1,15 @@
 import { redirect } from "next/navigation";
-import { currentAdmin, listAdminQuestions, listAdminTaxonomy } from "@/lib/admin";
+import { adminAccess, listAdminQuestions, listAdminTaxonomy } from "@/lib/admin";
 import { AdminQuestionManager } from "@/components/admin/question-manager";
 import { ImportPanel } from "@/components/admin/import-panel";
+import { AdminDenied } from "@/components/admin/denied";
 import Link from "next/link";
 
 export default async function AdminPage() {
-  const admin = await currentAdmin();
-  if (!admin) redirect("/sign-in?callbackUrl=/admin");
+  const access = await adminAccess();
+  if (access.status === "signed-out") redirect("/sign-in?callbackUrl=/admin");
+  if (access.status === "denied") return <AdminDenied />;
+  const admin = access.user;
   const [questions, taxonomy] = await Promise.all([listAdminQuestions(), listAdminTaxonomy()]);
   return (
     <main className="min-h-dvh bg-background px-4 py-8 text-foreground sm:px-8">

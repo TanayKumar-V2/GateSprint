@@ -2,7 +2,7 @@ import { PDFParse } from "pdf-parse";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { NextResponse } from "next/server";
-import { currentAdmin, listAdminTaxonomy } from "@/lib/admin";
+import { adminAccess, listAdminTaxonomy } from "@/lib/admin";
 import { generateImportText } from "@/lib/ai/model-router";
 import { badRequest, forbidden, unauthorized } from "@/lib/api/respond";
 import { isAllowedOrigin } from "@/lib/security/origin";
@@ -128,7 +128,9 @@ function normalizeExtractedQuestion(value: unknown, fallbackYear: number | null,
 }
 
 export async function POST(request: Request) {
-  if (!(await currentAdmin())) return unauthorized("Admin sign-in required.");
+  const access = await adminAccess();
+  if (access.status === "signed-out") return unauthorized("Admin sign-in required.");
+  if (access.status === "denied") return forbidden("Admin access required.");
   if (!isAllowedOrigin(request)) return forbidden();
   const form = await request.formData().catch(() => null);
   const file = form?.get("file");

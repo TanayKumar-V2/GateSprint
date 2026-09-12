@@ -26,6 +26,25 @@ export async function currentAdmin() {
   return user && isAdminEmail(user.email) ? user : null;
 }
 
+export type AdminUser = {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+};
+
+/** Distinguishes "signed out" from "signed in but not an admin" so pages
+ * can redirect the former and show an access-denied state to the latter
+ * instead of bouncing them between sign-in and admin forever. */
+export async function adminAccess(): Promise<
+  { status: "ok"; user: AdminUser } | { status: "signed-out" } | { status: "denied" }
+> {
+  const session = await auth();
+  if (!session?.user) return { status: "signed-out" };
+  if (!isAdminEmail(session.user.email)) return { status: "denied" };
+  return { status: "ok", user: session.user };
+}
+
 export async function listAdminQuestions() {
   return db
     .select({

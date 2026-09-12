@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/db";
 import { questions, solutions } from "@/db/schema";
-import { currentAdmin, listAdminTaxonomy } from "@/lib/admin";
+import { adminAccess, listAdminTaxonomy } from "@/lib/admin";
 import {
   answerMatchesOptions,
   dedupeKey,
@@ -35,7 +35,9 @@ const importedQuestion = z.object({
 const batch = z.object({ questions: z.array(z.unknown()).min(1).max(500) });
 
 export async function POST(request: Request) {
-  if (!(await currentAdmin())) return unauthorized("Admin sign-in required.");
+  const access = await adminAccess();
+  if (access.status === "signed-out") return unauthorized("Admin sign-in required.");
+  if (access.status === "denied") return forbidden("Admin access required.");
   if (!isAllowedOrigin(request)) return forbidden();
   let body: unknown;
   try { body = await request.json(); } catch { return badRequest("Send valid JSON."); }

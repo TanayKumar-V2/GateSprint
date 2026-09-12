@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { currentAdmin } from "@/lib/admin";
+import { adminAccess } from "@/lib/admin";
+import { AdminDenied } from "@/components/admin/denied";
 import { ImportPanel } from "@/components/admin/import-panel";
 
 export default async function AdminImportPage() {
-  const admin = await currentAdmin();
-  if (!admin) redirect("/sign-in?callbackUrl=/admin/import");
+  const access = await adminAccess();
+  if (access.status === "signed-out") redirect("/sign-in?callbackUrl=/admin/import");
+  if (access.status === "denied") return <AdminDenied />;
 
   return (
     <main className="min-h-dvh bg-background px-4 py-8 text-foreground sm:px-8">

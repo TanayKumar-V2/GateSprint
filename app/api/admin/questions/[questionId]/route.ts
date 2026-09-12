@@ -3,7 +3,7 @@ import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { questions, solutions, subjects, topics, type CorrectAnswer } from "@/db/schema";
-import { currentAdmin } from "@/lib/admin";
+import { adminAccess } from "@/lib/admin";
 import { badRequest, forbidden, notFoundPrivate, unauthorized } from "@/lib/api/respond";
 import { isAllowedOrigin } from "@/lib/security/origin";
 
@@ -15,7 +15,9 @@ const payload = z.object({
 });
 
 async function guard(request: Request) {
-  if (!(await currentAdmin())) return unauthorized("Admin sign-in required.");
+  const access = await adminAccess();
+  if (access.status === "signed-out") return unauthorized("Admin sign-in required.");
+  if (access.status === "denied") return forbidden("Admin access required.");
   if (!isAllowedOrigin(request)) return forbidden();
   return null;
 }
