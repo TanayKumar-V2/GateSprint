@@ -29,11 +29,11 @@ export default async function DashboardLayout({
       >
         Skip to content
       </a>
-      <header className="border-b">
-        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
+      <header className="sticky top-3 z-40 px-4 sm:px-6">
+        <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-3 rounded-full border border-white/10 bg-background/70 px-3 shadow-[0_18px_50px_-24px_rgb(0_0_0/0.45)] backdrop-blur-2xl sm:px-4">
           <Link
             href="/"
-            className="shrink-0 rounded-md text-base font-semibold tracking-tight focus-visible:outline-2"
+            className="shrink-0 rounded-full px-2 text-base font-semibold tracking-tight focus-visible:outline-2"
           >
             GATE Mentor
           </Link>
@@ -43,7 +43,7 @@ export default async function DashboardLayout({
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
+                    className="whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-all duration-500 hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
                   >
                     {item.label}
                   </Link>
@@ -56,7 +56,7 @@ export default async function DashboardLayout({
                     await signOut({ redirectTo: "/" });
                   }}
                 >
-                  <Button type="submit" variant="ghost" size="sm" className="whitespace-nowrap">
+                  <Button type="submit" variant="ghost" size="sm" className="whitespace-nowrap rounded-full">
                     Sign out
                   </Button>
                 </form>

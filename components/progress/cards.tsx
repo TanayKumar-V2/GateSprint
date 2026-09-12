@@ -38,7 +38,8 @@ export function MetricCard({
 
 export function RecommendationCard({ rec }: { rec: Recommendation }) {
   return (
-    <Card>
+    <div className="bezel h-full">
+      <Card>
       <CardHeader>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="secondary">{rec.difficulty}</Badge>
@@ -73,7 +74,8 @@ export function RecommendationCard({ rec }: { rec: Recommendation }) {
           </Link>
         </div>
       </CardContent>
-    </Card>
+      </Card>
+    </div>
   );
 }
 

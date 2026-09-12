@@ -9,6 +9,7 @@ import {
 import { listQuerySchema } from "@/lib/validation/answers";
 import { PracticeFilters } from "@/components/practice/filters";
 import { QuestionCard } from "@/components/practice/question-card";
+import { Reveal } from "@/components/motion/reveal";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -80,10 +81,10 @@ export default async function PracticePage({
         </div>
       ) : (
         <ul className="grid gap-4 md:grid-cols-2">
-          {list.data.map((q) => (
-            <li key={q.id}>
+          {list.data.map((q, i) => (
+            <Reveal as="li" key={q.id} delay={(i % 6) * 60}>
               <QuestionCard question={q} />
-            </li>
+            </Reveal>
           ))}
         </ul>
       )}

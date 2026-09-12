@@ -159,12 +159,128 @@
   }
   :focus-visible {
     outline: 2px solid var(--ring);
-    outline-offset: 2px;
+    outline-offset: 3px;
   }
   /* Readable line lengths for study content. */
   .prose-study {
     max-width: 68ch;
   }
+  /* Browser surfaces carry the design too. */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in oklch, var(--foreground) 18%, transparent);
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklch, var(--foreground) 22%, transparent) transparent;
+  }
+}
+
+/* ---------- Motion: one spring language, no linear/ease-in-out ---------- */
+:root {
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-snappy: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  a,
+  button,
+  [data-slot="button"] {
+    transition-timing-function: var(--ease-spring);
+  }
+  [data-slot="button"]:active {
+    scale: 0.98;
+  }
+}
+
+/* ---------- Scroll reveals (IntersectionObserver adds .is-in) ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  filter: blur(6px);
+  transition:
+    opacity 0.9s var(--ease-spring),
+    transform 0.9s var(--ease-spring),
+    filter 0.9s var(--ease-spring);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+/* ---------- Double-bezel: machined shell + inner core ---------- */
+.bezel {
+  padding: 6px;
+  border-radius: 1.75rem;
+  background: color-mix(in oklch, var(--foreground) 5%, transparent);
+  box-shadow:
+    inset 0 1px 1px rgb(255 255 255 / 0.08),
+    0 24px 60px -32px rgb(0 0 0 / 0.35);
+}
+.bezel > [data-slot="card"] {
+  border-radius: calc(1.75rem - 6px);
+  height: 100%;
+}
+
+/* ---------- Eyebrow tags ---------- */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  background: color-mix(in oklch, var(--foreground) 6%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--foreground) 10%, transparent);
+}
+
+/* ---------- Ambient orbs (hero backgrounds, never on scrolling content) ---------- */
+.orbs {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.orbs::before,
+.orbs::after {
+  content: "";
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+}
+.orbs::before {
+  width: 480px;
+  height: 480px;
+  top: -160px;
+  right: -120px;
+  background: radial-gradient(circle, oklch(0.72 0.16 72 / 0.22), transparent 70%);
+}
+.orbs::after {
+  width: 420px;
+  height: 420px;
+  bottom: -180px;
+  left: -140px;
+  background: radial-gradient(circle, oklch(0.65 0.12 230 / 0.16), transparent 70%);
+}
+.dark .orbs::before {
+  background: radial-gradient(circle, oklch(0.72 0.16 72 / 0.14), transparent 70%);
+}
+.dark .orbs::after {
+  background: radial-gradient(circle, oklch(0.55 0.16 290 / 0.16), transparent 70%);
 }
 
 @media (prefers-reduced-motion: reduce) {

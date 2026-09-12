@@ -7,6 +7,7 @@ import {
   MetricCard,
   RecommendationCard,
 } from "@/components/progress/cards";
+import { Reveal } from "@/components/motion/reveal";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -37,10 +38,10 @@ export default async function ProgressPage() {
               Where to begin
             </h2>
             <ul className="grid gap-4 md:grid-cols-2">
-              {recs.data.map((r) => (
-                <li key={r.questionId}>
+              {recs.data.map((r, i) => (
+                <Reveal as="li" key={r.questionId} delay={(i % 4) * 70}>
                   <RecommendationCard rec={r} />
-                </li>
+                </Reveal>
               ))}
             </ul>
           </section>
@@ -96,10 +97,10 @@ export default async function ProgressPage() {
           </p>
         ) : (
           <ul className="grid gap-4 md:grid-cols-2">
-            {recs.data.map((r) => (
-              <li key={r.questionId}>
+            {recs.data.map((r, i) => (
+              <Reveal as="li" key={r.questionId} delay={(i % 4) * 70}>
                 <RecommendationCard rec={r} />
-              </li>
+              </Reveal>
             ))}
           </ul>
         )}

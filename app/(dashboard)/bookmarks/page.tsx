@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { currentUserId } from "@/lib/current-user";
 import { listBookmarks } from "@/lib/progress";
 import { QuestionCard } from "@/components/practice/question-card";
+import { Reveal } from "@/components/motion/reveal";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -36,10 +37,10 @@ export default async function BookmarksPage() {
         </div>
       ) : (
         <ul className="grid gap-4 md:grid-cols-2">
-          {saved.map((q) => (
-            <li key={q.id}>
+          {saved.map((q, i) => (
+            <Reveal as="li" key={q.id} delay={(i % 6) * 60}>
               <QuestionCard question={q} />
-            </li>
+            </Reveal>
           ))}
         </ul>
       )}

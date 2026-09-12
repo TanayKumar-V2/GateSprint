@@ -18,7 +18,8 @@ const TYPE_LABEL: Record<QuestionListItem["type"], string> = {
 
 export function QuestionCard({ question }: { question: QuestionListItem }) {
   return (
-    <Card>
+    <div className="bezel h-full">
+      <Card>
       <CardHeader>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="secondary">{TYPE_LABEL[question.type]}</Badge>
@@ -56,6 +57,7 @@ export function QuestionCard({ question }: { question: QuestionListItem }) {
           className="line-clamp-2 text-sm leading-6 text-muted-foreground [&_.katex-display]:hidden"
         />
       </CardContent>
-    </Card>
+      </Card>
+    </div>
   );
 }
