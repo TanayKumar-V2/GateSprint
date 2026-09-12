@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { Recommendation } from "@/lib/progress";
+import { MathText } from "@/components/markdown/math-text";
 import { cn } from "@/lib/utils";
 
 export function MetricCard({
@@ -52,9 +53,11 @@ export function RecommendationCard({ rec }: { rec: Recommendation }) {
         <CardDescription>{rec.reason}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
-        <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
-          {rec.prompt}
-        </p>
+        <MathText
+          text={rec.prompt}
+          inline
+          className="line-clamp-2 text-sm leading-6 text-muted-foreground [&_.katex-display]:hidden"
+        />
         <div className="flex gap-2">
           <Link
             href={rec.practicePath}

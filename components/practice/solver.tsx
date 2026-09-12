@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { MathText } from "@/components/markdown/math-text";
 import type { QuestionView } from "@/lib/questions";
 
 type ResultState = {
@@ -211,7 +212,7 @@ export function QuestionSolver({ view }: { view: QuestionView }) {
                   />
                   <span>
                     <strong className="mr-2">{option.id}.</strong>
-                    {option.text}
+                    <MathText text={option.text} inline />
                   </span>
                 </label>
               );
@@ -270,9 +271,10 @@ export function QuestionSolver({ view }: { view: QuestionView }) {
               <summary className="cursor-pointer text-sm font-medium">
                 Solution
               </summary>
-              <p className="mt-2 text-sm leading-7 whitespace-pre-wrap">
-                {result.solution}
-              </p>
+              <MathText
+                text={result.solution}
+                className="mt-2 text-sm leading-7 [&_p]:my-2"
+              />
             </details>
           ) : null}
         </section>

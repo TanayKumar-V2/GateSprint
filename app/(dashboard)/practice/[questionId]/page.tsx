@@ -5,6 +5,7 @@ import { getQuestionView } from "@/lib/questions";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { QuestionSolver } from "@/components/practice/solver";
+import { MathText } from "@/components/markdown/math-text";
 import { cn } from "@/lib/utils";
 
 const TYPE_LABEL = { mcq: "MCQ", msq: "MSQ", nat: "NAT" } as const;
@@ -49,8 +50,8 @@ export default async function QuestionPage({
           {view.sourceLabel ? ` · ${view.sourceLabel}` : ""}
           {view.questionNumber ? ` · Q${view.questionNumber}` : ""}
         </p>
-        <h1 className="prose-study text-lg font-medium leading-8 whitespace-pre-wrap">
-          {view.prompt}
+        <h1 className="prose-study text-lg font-medium leading-8">
+          <MathText text={view.prompt} inline />
         </h1>
       </header>
 

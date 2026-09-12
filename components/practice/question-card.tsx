@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { MathText } from "@/components/markdown/math-text";
 import {
   Card,
   CardContent,
@@ -49,9 +50,11 @@ export function QuestionCard({ question }: { question: QuestionListItem }) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
-          {question.prompt}
-        </p>
+        <MathText
+          text={question.prompt}
+          inline
+          className="line-clamp-2 text-sm leading-6 text-muted-foreground [&_.katex-display]:hidden"
+        />
       </CardContent>
     </Card>
   );
