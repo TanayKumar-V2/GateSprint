@@ -239,6 +239,11 @@ export const chatSessions = pgTable(
       () => questions.id,
       { onDelete: "set null" },
     ),
+    // Targeted revision started from a weak-topic recommendation.
+    // Progress is always reloaded server-side from this topic.
+    sourceTopicId: uuid("source_topic_id").references(() => topics.id, {
+      onDelete: "set null",
+    }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },

@@ -15,6 +15,13 @@
       "when": 1789190085245,
       "tag": "0001_brown_puppet_master",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789191157587,
+      "tag": "0002_needy_wallflower",
+      "breakpoints": true
     }
   ]
 }
