@@ -61,9 +61,15 @@ The seed is idempotent — rerun it any time. Point `DATABASE_URL` at Neon
 - `docs/adr.md` — version/decision record
 - `docs/phase0-baseline.md` — env findings, infra, CI, threat model
 - `docs/threat-model.md` — lightweight threat model
+- `docs/data-model.md` — tables, answer shapes, db commands
+- `docs/auth.md` — sign-in setup, sessions, rotation
+- `docs/mentor.md` — prompt, fallback policy, budgets
+- `docs/deployment.md` — hosting setup, env reference, launch checklist
+- `docs/operations.md` — backups, rotation, incident checklist
 
 ## Security notes
 
 - Secrets only via env; `.env*` ignored; never baked into images.
 - Security headers centralized in `lib/security/headers.ts` + `next.config.ts`.
-- Rate limiting is a stub in Phase 1; Redis-backed enforcement lands in Phase 6.
+- Rate limiting runs on shared Redis (local container or Upstash) with
+  per-user chat budgets — see `docs/mentor.md` and `docs/operations.md`.

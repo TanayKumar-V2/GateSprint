@@ -8,30 +8,7 @@ import {
   subjects,
   topics,
 } from "@/db/schema";
-
-/**
- * Source context is untrusted content (question text, solutions, student
- * answers) even when it comes from our own database. It always travels
- * inside a clearly delimited block, separate from the system instructions,
- * so injected text inside a question can't rewrite the teaching rules.
- */
-
-const BEGIN = "=== SOURCE CONTEXT (untrusted application data) ===";
-const END = "=== END SOURCE CONTEXT ===";
-
-function optionsText(options: { id: string; text: string }[] | null): string {
-  if (!options) return "(numerical answer — no options)";
-  return options.map((o) => `${o.id}. ${o.text}`).join("\n");
-}
-
-function answerText(answer: unknown): string {
-  if (!answer || typeof answer !== "object") return "(none)";
-  const a = answer as Record<string, unknown>;
-  if (typeof a.optionId === "string") return a.optionId;
-  if (Array.isArray(a.optionIds)) return (a.optionIds as string[]).join(", ");
-  if (typeof a.value === "number") return String(a.value);
-  return "(none)";
-}
+import { formatQuestionBlock, formatTopicBlock } from "./blocks";
 
 /** Full PYQ context for Ask-Mentor sessions. Loaded server-side only. */
 export async function buildQuestionContext(
@@ -77,24 +54,21 @@ export async function buildQuestionContext(
     .orderBy(solutions.solutionType)
     .limit(1);
 
-  return `${BEGIN}
-The student tapped "Ask Mentor" on this practice question. Use it as the shared background — they should never have to retype it.
-
-Subject: ${q.subjectName}
-Topic: ${q.topicName}
-Source: ${q.sourceLabel ?? "practice bank"} · Marks: ${q.marks}${q.negativeMarks > 0 ? ` (negative ${q.negativeMarks})` : ""}
-Question type: ${q.type}
-
-Question:
-${q.prompt}
-
-Options:
-${optionsText(q.options)}
-
-Correct answer: ${answerText(q.correctAnswer)}
-${latest ? `Student's selected answer: ${answerText(latest.selectedAnswer)} (${latest.isCorrect ? "correct" : "incorrect"})` : "The student has not attempted this question yet."}
-${solRows[0] ? `Available solution:\n${solRows[0].content}` : ""}
-${END}`;
+  return formatQuestionBlock({
+    subjectName: q.subjectName,
+    topicName: q.topicName,
+    sourceLabel: q.sourceLabel,
+    marks: q.marks,
+    negativeMarks: q.negativeMarks,
+    type: q.type,
+    prompt: q.prompt,
+    options: q.options,
+    correctAnswer: q.correctAnswer,
+    selectedAnswer: latest?.selectedAnswer ?? null,
+    wasCorrect: latest?.isCorrect ?? false,
+    attempted: latest !== null,
+    solution: solRows[0]?.content ?? null,
+  });
 }
 
 /** Focused revision context for weak-topic sessions. Statistics are computed
@@ -147,13 +121,12 @@ export async function buildTopicContext(
     .filter(([, e]) => e.correct < e.total)
     .map(([id]) => id);
 
-  return `${BEGIN}
-The student started a targeted revision session for a weak topic. Create a focused revision path: the concept order to cover, one worked example, then practice pointers. Keep it encouraging and concrete.
-
-Subject: ${t.subjectName}
-Topic: ${t.topicName}
-Student's record in this topic: ${total} attempts${accuracy === null ? " (no attempts yet)" : `, ${accuracy}% accuracy`}
-${missed.length > 0 ? `Questions they have missed here (ids, for your reference only — describe them, don't paste ids): ${missed.slice(0, 8).join(", ")}` : "No recorded misses in this topic yet."}
-Available published questions in this topic: ${questionRows.length}
-${END}`;
+  return formatTopicBlock({
+    subjectName: t.subjectName,
+    topicName: t.topicName,
+    attempts: total,
+    accuracyPct: accuracy,
+    missedIds: missed,
+    availableCount: questionRows.length,
+  });
 }

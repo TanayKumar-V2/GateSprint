@@ -32,9 +32,9 @@
   outcome + provider only — no emails, tokens, or profiles.
 - Error text on the sign-in screen is generic and never confirms whether an
   account exists.
-- Per-IP/per-user sign-in rate limits arrive with the shared Redis limiter;
-  until then, Google's own abuse protection plus generic errors are the
-  backstop.
+- The shared Redis limiter enforces chat budgets; dedicated per-IP
+  sign-in throttling is still open — until then, Google's own abuse
+  protection plus generic errors are the backstop.
 
 ## Local testing without Google keys
 

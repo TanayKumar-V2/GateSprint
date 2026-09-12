@@ -8,10 +8,12 @@ import {
   subjects,
   topics,
 } from "@/db/schema";
-
-export const WEAK_MIN_ATTEMPTS = 3;
-export const WEAK_MAX_ACCURACY = 0.6;
-export const SMALL_SAMPLE_MISS_STREAK = 2;
+import {
+  accuracyOf,
+  evaluateWeakTopic,
+  pct,
+  rankQuestions,
+} from "./recommend-rules";
 
 export type TopicStats = {
   subjectSlug: string;
@@ -94,14 +96,6 @@ async function loadUserData(userId: string) {
   return { attemptRows, bookmarked: new Set(bookmarkRows.map((b) => b.questionId)) };
 }
 
-function accuracyOf(correct: number, total: number): number | null {
-  return total === 0 ? null : Math.round((correct / total) * 1000) / 1000;
-}
-
-function pct(accuracy: number | null): string {
-  return accuracy === null ? "—" : `${Math.round(accuracy * 100)}%`;
-}
-
 export async function getTopicStats(userId: string): Promise<TopicStats[]> {
   const { subjectRows, topicRows, questionRows } = await loadBank();
   const { attemptRows } = await loadUserData(userId);
@@ -129,20 +123,11 @@ export async function getTopicStats(userId: string): Promise<TopicStats[]> {
   return topicRows.map((t) => {
     const s = subjectById.get(t.subjectId)!;
     const stat = byTopic.get(t.id) ?? { total: 0, correct: 0, streak: 0 };
-    const accuracy = accuracyOf(stat.correct, stat.total);
-    let weak = false;
-    let weakReason: string | null = null;
-    if (stat.total >= WEAK_MIN_ATTEMPTS && accuracy !== null && accuracy < WEAK_MAX_ACCURACY) {
-      weak = true;
-      weakReason = `${pct(accuracy)} accuracy across ${stat.total} attempts — needs work`;
-    } else if (
-      stat.total > 0 &&
-      stat.total < WEAK_MIN_ATTEMPTS &&
-      stat.streak >= SMALL_SAMPLE_MISS_STREAK
-    ) {
-      weak = true;
-      weakReason = `${stat.streak} recent misses in a row — early warning sign`;
-    }
+    const verdict = evaluateWeakTopic({
+      attempts: stat.total,
+      correct: stat.correct,
+      recentMissStreak: stat.streak,
+    });
     return {
       subjectSlug: s.slug,
       subjectName: s.name,
@@ -150,10 +135,10 @@ export async function getTopicStats(userId: string): Promise<TopicStats[]> {
       topicName: t.name,
       attempts: stat.total,
       correct: stat.correct,
-      accuracy,
+      accuracy: verdict.accuracy,
       recentMissStreak: stat.streak,
-      weak,
-      weakReason,
+      weak: verdict.weak,
+      weakReason: verdict.reason,
     };
   });
 }
@@ -241,8 +226,6 @@ export type Recommendation = {
   revisePath: string;
 };
 
-const DIFFICULTY_RANK = { easy: 0, medium: 1, hard: 2 } as const;
-
 export async function getRecommendations(
   userId: string,
   opts: {
@@ -317,13 +300,7 @@ export async function getRecommendations(
     list.push(q);
     byTopicId.set(q.topicId, list);
   }
-  const order = (list: PublishedQuestion[]) =>
-    [...list].sort(
-      (a, b) =>
-        DIFFICULTY_RANK[a.difficulty] - DIFFICULTY_RANK[b.difficulty] ||
-        b.year - a.year ||
-        (a.questionNumber ?? 0) - (b.questionNumber ?? 0),
-    );
+  const order = (list: PublishedQuestion[]) => rankQuestions(list);
 
   // Weak topics first, worst accuracy at the top.
   const weak = topicStats

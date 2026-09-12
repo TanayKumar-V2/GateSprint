@@ -20,5 +20,49 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npm run lint
       - run: npm run typecheck
+      - run: npm test
       - run: npm run build
       - run: docker build -t gate-mentor:ci .
+      - run: npm audit --audit-level=high
+
+  integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: gate
+          POSTGRES_PASSWORD: gate
+          POSTGRES_DB: gate_mentor
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U gate -d gate_mentor"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://gate:gate@localhost:5432/gate_mentor
+      REDIS_URL: redis://localhost:6379
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run db:migrate
+      - run: npm run db:seed
+      - run: npm run db:seed
+      - name: Verify seeded bank
+        run: |
+          test "$(npx tsx --conditions=react-server -e "import { db } from './db/index.ts'; import { questions } from './db/schema.ts'; import { count } from 'drizzle-orm'; async function main() { const r = await db.select({ c: count() }).from(questions); console.log(r[0].c); process.exit(0); } main();")" = "18"
