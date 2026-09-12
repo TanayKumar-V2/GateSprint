@@ -5,6 +5,7 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import { CopyButton } from "./copy-button";
 import { cn } from "@/lib/utils";
+import { normalizeMathDelimiters } from "@/components/markdown/math-text";
 
 function CodeBlock({ language, code }: { language: string; code: string }) {
   return (
@@ -60,7 +61,7 @@ export function ChatMessageBody({
           },
         }}
       >
-        {content}
+        {normalizeMathDelimiters(content)}
       </ReactMarkdown>
     </div>
   );
