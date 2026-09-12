@@ -50,7 +50,12 @@ export function MathText({
 }) {
   const Wrapper = inline ? "span" : "div";
   return (
-    <Wrapper className={cn(inline ? "inline" : undefined, className)}>
+    <Wrapper
+      className={cn(
+        inline ? "inline" : "[&_.katex-display]:overflow-x-auto [&_.katex-display]:py-1",
+        className,
+      )}
+    >
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex]}

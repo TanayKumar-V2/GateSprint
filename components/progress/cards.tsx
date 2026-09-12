@@ -118,8 +118,8 @@ export function BreakdownTable({
           {rows.map((r) => (
             <tr key={r.slug} className="border-b last:border-0">
               <td className="px-4 py-2 font-medium">{r.name}</td>
-              <td className="px-4 py-2">{r.attempts}</td>
-              <td className="px-4 py-2">
+              <td className="px-4 py-2 tabular-nums">{r.attempts}</td>
+              <td className="px-4 py-2 tabular-nums">
                 {r.accuracy === null ? (
                   <span className="text-muted-foreground">No attempts yet</span>
                 ) : (

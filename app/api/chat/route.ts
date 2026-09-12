@@ -64,7 +64,10 @@ export async function POST(request: Request) {
 
   let body: unknown;
   try {
-    body = await request.json();
+    // Read as text first so oversized bodies are rejected before parsing.
+    const raw = await request.text();
+    if (raw.length > MAX_BODY_BYTES) return badRequest("Message too large.");
+    body = JSON.parse(raw) as unknown;
   } catch {
     return badRequest("Send valid JSON.");
   }

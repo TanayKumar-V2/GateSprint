@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ChatMessageBody } from "./message";
 import { readUIChunks } from "./stream";
-import { cn } from "@/lib/utils";
 
 export type ThreadMessage = {
   id: string;
@@ -20,6 +19,37 @@ function newId(): string {
     : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+/** Settled messages never re-render mid-stream. */
+const SettledMessage = memo(function SettledMessage({
+  message,
+}: {
+  message: ThreadMessage;
+}) {
+  if (message.role === "user") {
+    return (
+      <div className="flex justify-end">
+        <div className="max-w-[85%] rounded-xl bg-primary px-4 py-2.5 text-sm leading-7 text-primary-foreground">
+          <ChatMessageBody content={message.content} />
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="max-w-full">
+      <ChatMessageBody content={message.content} />
+      {message.stopped ? (
+        <p className="mt-1 text-xs text-muted-foreground">
+          Stopped — what you see above is saved.
+        </p>
+      ) : null}
+    </div>
+  );
+});
+
+function isNearBottom(el: HTMLDivElement): boolean {
+  return el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+}
+
 export function ChatThread({
   sessionId,
   initial,
@@ -32,6 +62,7 @@ export function ChatThread({
 }) {
   const router = useRouter();
   const [messages, setMessages] = useState<ThreadMessage[]>(initial);
+  const [draft, setDraft] = useState<ThreadMessage | null>(null);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,8 +72,8 @@ export function ChatThread({
 
   useEffect(() => {
     const el = scrollRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, [messages]);
+    if (el && isNearBottom(el)) el.scrollTop = el.scrollHeight;
+  });
 
   async function send(text: string, opts: { appendUser: boolean }) {
     const trimmed = text.trim();
@@ -52,7 +83,7 @@ export function ChatThread({
       setMessages((m) => [...m, { id: newId(), role: "user", content: trimmed }]);
     }
     const draftId = newId();
-    setMessages((m) => [...m, { id: draftId, role: "assistant", content: "" }]);
+    setDraft({ id: draftId, role: "assistant", content: "" });
     setStreaming(true);
     const controller = new AbortController();
     abortRef.current = controller;
@@ -72,37 +103,35 @@ export function ChatThread({
         } catch {
           // Keep the generic hint.
         }
-        setError(res.status === 429 ? hint : hint);
-        setMessages((m) => m.filter((msg) => msg.id !== draftId));
+        setError(hint);
+        setDraft(null);
         return;
       }
       for await (const chunk of readUIChunks(res.body)) {
         const c = chunk as { type?: string; delta?: unknown; errorText?: unknown };
         if (c.type === "text-delta" && typeof c.delta === "string") {
           const delta = c.delta;
-          setMessages((m) =>
-            m.map((msg) =>
-              msg.id === draftId ? { ...msg, content: msg.content + delta } : msg,
-            ),
-          );
+          setDraft((d) => (d ? { ...d, content: d.content + delta } : d));
         } else if (c.type === "error") {
-          throw new Error(
-            typeof c.errorText === "string" && c.errorText.length > 0
-              ? "Mentor hit a snag mid-reply."
-              : "Mentor hit a snag mid-reply.",
-          );
+          throw new Error("Mentor hit a snag mid-reply.");
         }
       }
+      setDraft((d) => {
+        if (d) setMessages((m) => [...m, d]);
+        return null;
+      });
     } catch (e) {
       if (e instanceof DOMException && e.name === "AbortError") {
-        setMessages((m) =>
-          m.map((msg) =>
-            msg.id === draftId ? { ...msg, stopped: true } : msg,
-          ),
-        );
+        setDraft((d) => {
+          if (d) setMessages((m) => [...m, { ...d, stopped: true }]);
+          return null;
+        });
       } else {
         setError("Something interrupted that reply. Retry below — nothing was lost.");
-        setMessages((m) => m.filter((msg) => msg.id !== draftId || msg.content !== ""));
+        setDraft((d) => {
+          if (d && d.content !== "") setMessages((m) => [...m, d]);
+          return null;
+        });
       }
     } finally {
       setStreaming(false);
@@ -127,40 +156,31 @@ export function ChatThread({
       <div
         ref={scrollRef}
         role="log"
-        aria-live="polite"
+        aria-live={streaming ? "off" : "polite"}
         aria-label="Conversation"
-        className="flex-1 space-y-6 overflow-y-auto py-4"
+        tabIndex={0}
+        className="flex-1 space-y-6 overflow-y-auto rounded-md py-4"
       >
-        {messages.length === 0 && !streaming ? (
+        {messages.length === 0 && !draft && !streaming ? (
           <p className="text-sm text-muted-foreground">
             Ask anything — a concept, a PYQ option that confuses you, or how
             to approach a topic.
           </p>
         ) : null}
-        {messages.map((m) =>
-          m.role === "user" ? (
-            <div key={m.id} className="flex justify-end">
-              <div className="max-w-[85%] rounded-xl bg-primary px-4 py-2.5 text-sm leading-7 text-primary-foreground">
-                <ChatMessageBody content={m.content} />
-              </div>
-            </div>
+        {messages.map((m) => (
+          <SettledMessage key={m.id} message={m} />
+        ))}
+        {draft ? (
+          draft.content === "" ? (
+            <p className="text-sm text-muted-foreground" aria-label="Thinking">
+              Thinking…
+            </p>
           ) : (
-            <div key={m.id} className="max-w-full">
-              {m.content === "" && !m.stopped ? (
-                <p className="text-sm text-muted-foreground" aria-label="Thinking">
-                  Thinking…
-                </p>
-              ) : (
-                <ChatMessageBody content={m.content} />
-              )}
-              {m.stopped ? (
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Stopped — what you see above is saved.
-                </p>
-              ) : null}
+            <div className="max-w-full" aria-hidden={streaming}>
+              <ChatMessageBody content={draft.content} />
             </div>
-          ),
-        )}
+          )
+        ) : null}
       </div>
 
       {error ? (
@@ -174,6 +194,7 @@ export function ChatThread({
           <Button
             type="button"
             variant="outline"
+            className="min-h-11"
             onClick={() => abortRef.current?.abort()}
           >
             Stop
@@ -199,6 +220,7 @@ export function ChatThread({
             />
             <Button
               type="button"
+              className="min-h-11"
               disabled={input.trim() === ""}
               onClick={() => {
                 const text = input;
@@ -221,8 +243,9 @@ export function ChatThread({
           </>
         )}
       </div>
-      <p className={cn("pb-1 text-xs text-muted-foreground")}>
-        Mentor can make mistakes — verify against solutions and standard texts.
+      <p className="pb-1 text-xs text-muted-foreground">
+        Enter to send · Shift+Enter for a new line. Mentor can make mistakes
+        — verify against solutions and standard texts.
       </p>
     </div>
   );

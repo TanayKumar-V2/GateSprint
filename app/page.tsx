@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Card,
   CardContent,
@@ -25,6 +26,7 @@ export default function Home() {
             GATE Mentor
           </p>
           <nav aria-label="Primary" className="flex items-center gap-2">
+            <ThemeToggle />
             <Link
               href="/practice"
               className={cn(buttonVariants({ variant: "ghost" }))}

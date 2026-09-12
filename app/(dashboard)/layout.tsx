@@ -2,6 +2,8 @@ import Link from "next/link";
 import { requireUserId } from "@/lib/current-user";
 import { signOut } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
+import "katex/dist/katex.min.css";
 
 const NAV = [
   { href: "/practice", label: "Practice" },
@@ -28,20 +30,20 @@ export default async function DashboardLayout({
         Skip to content
       </a>
       <header className="border-b">
-        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
           <Link
             href="/"
-            className="rounded-md text-base font-semibold tracking-tight focus-visible:outline-2"
+            className="shrink-0 rounded-md text-base font-semibold tracking-tight focus-visible:outline-2"
           >
             GATE Mentor
           </Link>
-          <nav aria-label="Study sections">
-            <ul className="flex items-center gap-1 sm:gap-2">
+          <nav aria-label="Study sections" className="min-w-0 flex-1 overflow-x-auto">
+            <ul className="flex w-max items-center gap-1 sm:gap-2">
               {NAV.map((item) => (
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
+                    className="whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
                   >
                     {item.label}
                   </Link>
@@ -54,13 +56,16 @@ export default async function DashboardLayout({
                     await signOut({ redirectTo: "/" });
                   }}
                 >
-                  <Button type="submit" variant="ghost" size="sm">
+                  <Button type="submit" variant="ghost" size="sm" className="whitespace-nowrap">
                     Sign out
                   </Button>
                 </form>
               </li>
             </ul>
           </nav>
+          <div className="shrink-0">
+            <ThemeToggle />
+          </div>
         </div>
       </header>
       <main
