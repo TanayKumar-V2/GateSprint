@@ -1,26 +1,73 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { currentUserId } from "@/lib/current-user";
+import { getQuestionView } from "@/lib/questions";
+import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+import { QuestionSolver } from "@/components/practice/solver";
+import { cn } from "@/lib/utils";
 
-export default async function QuestionPlaceholderPage({
+const TYPE_LABEL = { mcq: "MCQ", msq: "MSQ", nat: "NAT" } as const;
+
+export default async function QuestionPage({
   params,
 }: {
   params: Promise<{ questionId: string }>;
 }) {
+  const userId = await currentUserId();
+  if (!userId) redirect("/sign-in");
   const { questionId } = await params;
-  if (!questionId || questionId.length > 120) notFound();
+
+  const view = await getQuestionView(userId, questionId);
+  if (!view) notFound();
+
   return (
-    <section aria-labelledby="q-heading" className="max-w-2xl">
-      <h1 id="q-heading" className="text-2xl font-semibold tracking-tight">
-        Question
-      </h1>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">
-        Question detail for <code>{questionId}</code> lands in Phase 4.
-      </p>
-      <p className="mt-4 text-sm">
-        <Link href="/practice" className="underline">
-          Back to Practice
+    <div className="mx-auto flex max-w-3xl flex-col gap-6">
+      <nav aria-label="Back">
+        <Link
+          href="/practice"
+          className={cn(buttonVariants({ variant: "ghost" }))}
+        >
+          ← All questions
         </Link>
-      </p>
-    </section>
+      </nav>
+
+      <header className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="secondary">{TYPE_LABEL[view.type]}</Badge>
+          <Badge variant="outline">{view.difficulty}</Badge>
+          <Badge variant="outline">{view.year}</Badge>
+          <Badge variant="outline">
+            {view.marks} mark{view.marks === 1 ? "" : "s"}
+          </Badge>
+          {view.lastAttempt ? (
+            <Badge>{view.lastAttempt.isCorrect ? "Solved ✓" : "Attempted"}</Badge>
+          ) : null}
+        </div>
+        <p className="text-sm text-muted-foreground">
+          {view.subject.name} · {view.topic.name}
+          {view.sourceLabel ? ` · ${view.sourceLabel}` : ""}
+          {view.questionNumber ? ` · Q${view.questionNumber}` : ""}
+        </p>
+        <h1 className="prose-study text-lg font-medium leading-8 whitespace-pre-wrap">
+          {view.prompt}
+        </h1>
+      </header>
+
+      <QuestionSolver view={view} />
+
+      <footer className="flex flex-wrap items-center gap-3 border-t pt-4">
+        <Link
+          href="/mentor"
+          className={cn(buttonVariants({ variant: "outline" }))}
+        >
+          Ask Mentor about this
+        </Link>
+        <p className="text-xs text-muted-foreground">
+          Full question context travels with you soon — for now it opens a
+          fresh chat.
+        </p>
+      </footer>
+    </div>
   );
 }

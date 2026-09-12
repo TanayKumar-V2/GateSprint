@@ -74,3 +74,31 @@ export const questionFilterSchema = z.object({
 });
 
 export type QuestionFilter = z.infer<typeof questionFilterSchema>;
+
+/* ---------- Attempt + bookmark inputs ---------- */
+
+export const attemptSubmissionSchema = z.object({
+  questionId: z.string().uuid(),
+  answer: submittedAnswerSchema,
+  timeTakenSeconds: z.number().int().min(0).max(86400).optional(),
+  startedAt: z.string().datetime({ offset: true }).optional(),
+  // Client-generated key so a retried request reuses the first attempt.
+  idempotencyKey: z.string().min(8).max(64).optional(),
+});
+
+export type AttemptSubmission = z.infer<typeof attemptSubmissionSchema>;
+
+export const bookmarkToggleSchema = z.object({
+  questionId: z.string().uuid(),
+});
+
+/* ---------- Question list query (filters + pagination) ---------- */
+
+const stringToBool = z.enum(["true", "false"]).transform((v) => v === "true");
+
+export const listQuerySchema = questionFilterSchema.extend({
+  attempted: stringToBool.optional(),
+  bookmarked: stringToBool.optional(),
+});
+
+export type ListQuery = z.infer<typeof listQuerySchema>;
