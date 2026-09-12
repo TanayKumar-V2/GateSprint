@@ -8,11 +8,12 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
   jsonb,
   index,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 
 /* ---------- Enums ---------- */
 
@@ -191,6 +192,9 @@ export const attempts = pgTable(
     // Raw submitted answer; isCorrect is always recomputed server-side.
     selectedAnswer: jsonb("selected_answer").notNull(),
     isCorrect: boolean("is_correct").notNull(),
+    // Optional client key: retried submissions with the same key return
+    // the original attempt instead of recording a duplicate.
+    clientKey: text("client_key"),
     timeTakenSeconds: integer("time_taken_seconds"),
     startedAt: timestamp("started_at"),
     submittedAt: timestamp("submitted_at").defaultNow().notNull(),
@@ -199,6 +203,9 @@ export const attempts = pgTable(
   (t) => [
     index("attempts_user_question_idx").on(t.userId, t.questionId),
     index("attempts_user_created_idx").on(t.userId, t.createdAt),
+    uniqueIndex("attempts_user_client_key_unique")
+      .on(t.userId, t.clientKey)
+      .where(sql`${t.clientKey} IS NOT NULL`),
   ],
 );
 
