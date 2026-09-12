@@ -25,6 +25,32 @@ export function fallbackEnabled(): boolean {
 
 const groq = createGroq({});
 
+/** One-shot structured generation for admin ingestion jobs. */
+export async function generateImportText(args: {
+  system: string;
+  prompt: string;
+  maxOutputTokens?: number;
+}): Promise<string> {
+  const run = async (modelId: string) => {
+    const result = await generateText({
+      model: groq(modelId),
+      system: args.system,
+      prompt: args.prompt,
+      maxOutputTokens: args.maxOutputTokens ?? 6000,
+      temperature: 0,
+      maxRetries: 0,
+      timeout: 90000,
+    });
+    return result.text;
+  };
+  try {
+    return await run(primaryModelId());
+  } catch (error) {
+    if (!fallbackEnabled()) throw error;
+    return run(fallbackModelId());
+  }
+}
+
 /* ---------- Failure classification ---------- */
 
 export type FailureKind =
