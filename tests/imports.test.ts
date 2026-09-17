@@ -4,11 +4,17 @@ import {
   answerMatchesOptions,
   comparable,
   dedupeKey,
+  extractNumberValue,
+  extractOptionLetter,
+  extractOptionLetters,
   matchSubject,
   matchTopic,
   normalizeAnswer,
+  normalizeConfidence,
   normalizeEnum,
   normalizeOptions,
+  normalizeQuestionNumber,
+  normalizeType,
   related,
   same,
   toNumber,
@@ -81,6 +87,48 @@ describe("normalizeOptions", () => {
     assert.equal(normalizeOptions(null), null);
     assert.equal(normalizeOptions(undefined), undefined);
   });
+  it("repairs messy model ids instead of failing validation", () => {
+    assert.deepEqual(normalizeOptions([{ id: "(A)", text: "x" }, { id: "Option B", text: "y" }]), [
+      { id: "A", text: "x" },
+      { id: "B", text: "y" },
+    ]);
+    assert.deepEqual(normalizeOptions([{ id: 1, text: "x" }, { id: 2, text: "y" }]), [
+      { id: "A", text: "x" },
+      { id: "B", text: "y" },
+    ]);
+    assert.deepEqual(normalizeOptions([{ id: "???", text: "x" }, { text: "y" }]), [
+      { id: "A", text: "x" },
+      { id: "B", text: "y" },
+    ]);
+  });
+});
+
+describe("extractOptionLetter(s)", () => {
+  it("pulls single letters from noisy model output", () => {
+    assert.equal(extractOptionLetter("(A)"), "A");
+    assert.equal(extractOptionLetter("A."), "A");
+    assert.equal(extractOptionLetter("Option B"), "B");
+    assert.equal(extractOptionLetter("ans: c"), "C");
+    assert.equal(extractOptionLetter(1), "A");
+    assert.equal(extractOptionLetter(""), null);
+    assert.equal(extractOptionLetter("?"), null);
+  });
+  it("splits plural answers on any separator", () => {
+    assert.deepEqual(extractOptionLetters("A,C"), ["A", "C"]);
+    assert.deepEqual(extractOptionLetters("A; C"), ["A", "C"]);
+    assert.deepEqual(extractOptionLetters("A and C"), ["A", "C"]);
+    assert.deepEqual(extractOptionLetters(["(A)", "Option C"]), ["A", "C"]);
+    assert.deepEqual(extractNumberValue("≈ 12.5"), 12.5);
+  });
+});
+
+describe("normalizeType", () => {
+  it("maps loose model labels to mcq/msq/nat", () => {
+    assert.equal(normalizeType("Single Choice"), "mcq");
+    assert.equal(normalizeType("multiple-choice"), "msq");
+    assert.equal(normalizeType("Numerical"), "nat");
+    assert.equal(normalizeType("MCQ"), "mcq");
+  });
 });
 
 describe("normalizeAnswer", () => {
@@ -101,6 +149,26 @@ describe("normalizeAnswer", () => {
     });
     assert.equal((normalizeAnswer({ kind: "mcq", optionId: "b" }) as { optionId: string }).optionId, "B");
   });
+  it("repairs the shapes that used to skip entire imports", () => {
+    // Previously: correctAnswer.optionId "must match pattern /^[A-Z]$/".
+    assert.deepEqual(normalizeAnswer({ kind: "mcq", optionId: "(A)" }, "mcq"), { kind: "mcq", optionId: "A" });
+    assert.deepEqual(normalizeAnswer({ kind: "mcq", optionId: "Option A" }, "mcq"), { kind: "mcq", optionId: "A" });
+    assert.deepEqual(normalizeAnswer({ kind: "mcq", optionId: "1" }, "mcq"), { kind: "mcq", optionId: "A" });
+    // Previously: correctAnswer "Invalid input" for non-object answers.
+    assert.deepEqual(normalizeAnswer("A", "mcq"), { kind: "mcq", optionId: "A" });
+    assert.deepEqual(normalizeAnswer("A,C", "msq"), { kind: "msq", optionIds: ["A", "C"] });
+    assert.deepEqual(normalizeAnswer({ answer: "C" }, "mcq"), { kind: "mcq", optionId: "C" });
+    assert.deepEqual(normalizeAnswer({ optionId: "B" }, "mcq"), { kind: "mcq", optionId: "B" });
+    assert.deepEqual(normalizeAnswer({ kind: "nat", value: "12.5-13.5" }, "nat"), { kind: "nat", value: 13, tolerance: 0.5 });
+  });
+  it("returns null for missing keys so imports become review drafts", () => {
+    assert.equal(normalizeAnswer(null, "mcq"), null);
+    assert.equal(normalizeAnswer(undefined, "mcq"), null);
+    assert.equal(normalizeAnswer("", "mcq"), null);
+    assert.equal(normalizeAnswer("?", "mcq"), null);
+    assert.equal(normalizeAnswer({ kind: "mcq", optionId: "?" }, "mcq"), null);
+    assert.equal(normalizeAnswer({}, "mcq"), null);
+  });
 });
 
 describe("answerMatchesOptions", () => {
@@ -118,5 +186,27 @@ describe("answerMatchesOptions", () => {
 describe("dedupeKey", () => {
   it("ignores case and whitespace", () => {
     assert.equal(dedupeKey("  What is  X? "), dedupeKey("what is x?"));
+  });
+});
+
+describe("normalizeQuestionNumber", () => {
+  it("reads numbers out of noisy model output", () => {
+    assert.equal(normalizeQuestionNumber("Q12"), 12);
+    assert.equal(normalizeQuestionNumber("12."), 12);
+    assert.equal(normalizeQuestionNumber(7), 7);
+    assert.equal(normalizeQuestionNumber(null), null);
+    assert.equal(normalizeQuestionNumber(""), undefined);
+    assert.ok(Number.isNaN(normalizeQuestionNumber("twelve") as number));
+  });
+});
+
+describe("normalizeConfidence", () => {
+  it("maps words and percents, never returns junk", () => {
+    assert.equal(normalizeConfidence("high"), 0.9);
+    assert.equal(normalizeConfidence("low"), 0.2);
+    assert.equal(normalizeConfidence(85), 0.85);
+    assert.equal(normalizeConfidence(0.7), 0.7);
+    assert.equal(normalizeConfidence("nonsense"), null);
+    assert.equal(normalizeConfidence(null), null);
   });
 });

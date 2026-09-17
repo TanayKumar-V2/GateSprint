@@ -1,11 +1,38 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { buildActivity } from "../lib/progress-activity";
 import {
   accuracyOf,
   evaluateWeakTopic,
   pct,
   rankQuestions,
 } from "../lib/recommend-rules";
+
+describe("practice activity", () => {
+  const now = new Date("2026-09-17T12:00:00Z");
+
+  it("returns 30 chronological UTC days including today and empty days", () => {
+    const days = buildActivity([], now);
+    assert.equal(days.length, 30);
+    assert.equal(days.at(0)?.date, "2026-08-19");
+    assert.equal(days.at(-1)?.date, "2026-09-17");
+    assert.ok(days.every((day) => day.attempts === 0 && day.correct === 0));
+  });
+
+  it("counts repeated attempts and correct answers on their UTC day", () => {
+    const days = buildActivity([
+      { submittedAt: new Date("2026-09-17T01:00:00Z"), isCorrect: false },
+      { submittedAt: new Date("2026-09-17T02:00:00Z"), isCorrect: true },
+      { submittedAt: new Date("2026-09-17T00:30:00+05:30"), isCorrect: true },
+      { submittedAt: new Date("2026-08-18T23:59:59Z"), isCorrect: true },
+      { submittedAt: new Date("2026-09-18T00:00:00Z"), isCorrect: true },
+      { submittedAt: new Date("invalid"), isCorrect: true },
+    ], now);
+    assert.deepEqual(days.at(-1), { date: "2026-09-17", attempts: 2, correct: 1 });
+    assert.deepEqual(days.at(-2), { date: "2026-09-16", attempts: 1, correct: 1 });
+    assert.equal(days.reduce((sum, day) => sum + day.attempts, 0), 3);
+  });
+});
 
 describe("accuracyOf", () => {
   it("returns null with no attempts, never a fake zero", () => {

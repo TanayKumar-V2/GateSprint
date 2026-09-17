@@ -1,218 +1,328 @@
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { IslandCta } from "@/components/island-cta";
-import { Reveal } from "@/components/motion/reveal";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { cn } from "@/lib/utils";
+import { redirect } from "next/navigation";
+import { LandingNav } from "@/components/landing/landing-nav";
+import { SubjectMarquee } from "@/components/landing/subject-marquee";
+import { FeatureAccordion } from "@/components/landing/feature-accordion";
+import { ScrubReveal } from "@/components/landing/scrub-reveal";
+import { ScaleGallery } from "@/components/landing/scale-gallery";
+import { SignInDialog } from "@/components/auth/sign-in-dialog";
+import { currentUserId } from "@/lib/current-user";
+import { isSignInConfigured } from "@/lib/auth";
 
-export default function Home() {
+const SIGNAL_ROWS = [
+  ["OPERATING SYSTEMS", "CS-01", "142 PYQ", "HIGH YIELD"],
+  ["ALGORITHMS", "CS-02", "168 PYQ", "HIGH YIELD"],
+  ["DATABASES", "CS-03", "121 PYQ", "STABLE"],
+  ["COMPUTER NETWORKS", "CS-04", "135 PYQ", "VOLATILE"],
+  ["THEORY OF COMPUTATION", "CS-05", "118 PYQ", "HIGH YIELD"],
+  ["DIGITAL LOGIC", "CS-06", "096 PYQ", "STABLE"],
+] as const;
+
+export default async function Home() {
+  // Signed-in users already have a workspace waiting — skip the marketing
+  // page and send them straight to practice.
+  if (await currentUserId()) redirect("/practice");
+
+  const configured = isSignInConfigured();
+
+  // Structured data for search: the landing page is the only public,
+  // indexable surface, so the organization + app schema lives here.
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        name: "GATE Mentor",
+        url: "/",
+        description:
+          "GATE Computer Science preparation: previous-year question practice with an AI tutor.",
+        inLanguage: "en-IN",
+      },
+      {
+        "@type": "SoftwareApplication",
+        name: "GATE Mentor",
+        applicationCategory: "EducationalApplication",
+        operatingSystem: "Web",
+        offers: { "@type": "Offer", price: "0", priceCurrency: "INR" },
+        description:
+          "Practice GATE CS/IT previous-year questions by subject, topic, year, and difficulty, with step-by-step Mentor explanations and accuracy analytics.",
+      },
+    ],
+  };
+
   return (
-    <div className="flex min-h-dvh flex-col bg-background text-foreground">
+    <main id="main" className="crt-landing crt-noise relative w-full max-w-full overflow-x-hidden">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:bg-(--crt-red) focus:px-4 focus:py-2 focus:font-mono focus:text-xs focus:font-bold focus:uppercase focus:text-(--crt-bg)"
       >
         Skip to content
       </a>
+      <LandingNav />
 
-      <header className="sticky top-3 z-40 px-4 sm:px-6">
-        <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between rounded-full border border-white/10 bg-background/70 px-3 shadow-[0_18px_50px_-24px_rgb(0_0_0/0.45)] backdrop-blur-2xl sm:px-4">
-          <p className="rounded-full px-2 text-base font-semibold tracking-tight">
-            GATE Mentor
+      {/* HERO — terminal command deck */}
+      <section aria-label="Command deck" className="relative border-b-2 border-(--crt-ink)">
+        <div aria-hidden="true" className="crt-scanlines pointer-events-none absolute inset-0" />
+        {/* crosshairs at compartment corners */}
+        <span aria-hidden="true" className="crt-micro absolute left-3 top-3 z-10 text-(--crt-dim)">+</span>
+        <span aria-hidden="true" className="crt-micro absolute right-3 top-3 z-10 text-(--crt-dim)">+</span>
+        <span aria-hidden="true" className="crt-micro absolute bottom-3 left-3 z-10 text-(--crt-dim)">+</span>
+        <span aria-hidden="true" className="crt-micro absolute bottom-3 right-3 z-10 text-(--crt-dim)">+</span>
+
+        {/* meta telemetry strip */}
+        <dl className="crt-grid-lines relative grid-cols-2 md:grid-cols-4">
+          <div className="flex items-center justify-between px-4 py-2.5 sm:px-6">
+            <dt className="crt-micro text-[10px] text-(--crt-dim)">EXAM</dt>
+            <dd className="crt-micro text-[11px] text-(--crt-ink)">
+              <data value="GATE-CS-IT">GATE CS/IT ©</data>
+            </dd>
+          </div>
+          <div className="flex items-center justify-between px-4 py-2.5 sm:px-6">
+            <dt className="crt-micro text-[10px] text-(--crt-dim)">MODE</dt>
+            <dd className="crt-micro text-[11px] text-(--crt-ink)">
+              <samp>PYQ-ARRAY™</samp>
+            </dd>
+          </div>
+          <div className="flex items-center justify-between px-4 py-2.5 sm:px-6">
+            <dt className="crt-micro text-[10px] text-(--crt-dim)">BANK</dt>
+            <dd className="crt-micro text-[11px] text-(--crt-ink)">
+              <output>083+ UNITS</output>
+            </dd>
+          </div>
+          <div className="flex items-center justify-between px-4 py-2.5 sm:px-6">
+            <dt className="crt-micro text-[10px] text-(--crt-dim)">LINK</dt>
+            <dd className="crt-micro text-[11px] text-(--crt-ok)">● LIVE</dd>
+          </div>
+        </dl>
+
+        <div className="relative px-4 pb-14 pt-14 sm:px-8 sm:pt-20">
+          <p className="crt-micro text-[11px] text-(--crt-red) sm:text-xs">
+            [ BOOT-SEQUENCE {"///"} REV 2.6 ] &gt;&gt;&gt; OPERATOR INPUT REQUIRED
           </p>
-          <nav aria-label="Primary" className="flex items-center gap-1 sm:gap-2">
-            <ThemeToggle />
+          <h1 className="crt-macro crt-phosphor mt-6 text-[clamp(3.2rem,10vw,11rem)] text-(--crt-ink)">
+            MAKE EVERY
+            <br />
+            QUESTION{" "}
+            <span className="bg-(--crt-red) px-3 text-(--crt-bg) [text-shadow:none]">
+              COUNT®
+            </span>
+          </h1>
+          <div className="mt-10 grid gap-px border border-(--crt-line) bg-(--crt-line) md:grid-cols-[1fr_auto]">
+            <p className="crt-micro bg-(--crt-bg) px-5 py-5 text-[11px] leading-relaxed text-(--crt-dim) sm:px-8 sm:text-[13px]">
+              <span className="text-(--crt-ink)">PRACTICE PREVIOUS-YEAR QUESTIONS.</span> GET
+              STEP-BY-STEP EXPLANATIONS FROM A MENTOR THAT REMEMBERS YOUR
+              CONTEXT — PICK + SOLUTION ATTACHED. NO GUESSWORK. SIGNAL ONLY.
+            </p>
+            <div className="flex flex-col bg-(--crt-bg) sm:flex-row md:flex-col lg:flex-row">
+              <Link
+                href="/practice"
+                className="crt-micro border-b border-(--crt-line) bg-(--crt-red) px-8 py-5 text-center text-[13px] font-bold text-(--crt-bg) transition-colors hover:bg-(--crt-ink) sm:border-b-0 sm:border-r lg:border-b-0"
+              >
+                START PRACTICING &gt;&gt;&gt;
+              </Link>
+              <Link
+                href="/mentor"
+                className="crt-micro px-8 py-5 text-center text-[13px] text-(--crt-ink) transition-colors hover:bg-(--crt-ink) hover:text-(--crt-bg)"
+              >
+                &lt; ASK MENTOR &gt;
+              </Link>
+            </div>
+          </div>
+          <p className="crt-micro mt-6 flex flex-wrap gap-x-8 gap-y-2 text-[10px] text-(--crt-dim) sm:text-[11px]">
+            <span>
+              PRESS <kbd className="border border-(--crt-line) px-1.5 py-0.5 text-(--crt-ink)">P</kbd> TO PRACTICE
+            </span>
+            <span>
+              PRESS <kbd className="border border-(--crt-line) px-1.5 py-0.5 text-(--crt-ink)">M</kbd> FOR MENTOR
+            </span>
+            <span>\\\\ FEED STABLE \\\\ LAT 28.61N LON 77.20E</span>
+          </p>
+        </div>
+        <div aria-hidden="true" className="crt-stripes h-4 w-full border-t-2 border-(--crt-ink)" />
+      </section>
+
+      <SubjectMarquee />
+
+      {/* 01 — OPERATIONAL UNITS */}
+      <section aria-label="Operational units" className="border-b-2 border-(--crt-ink)">
+        <div className="flex flex-wrap items-end justify-between gap-4 px-4 pb-8 pt-14 sm:px-8">
+          <div>
+            <p className="crt-micro text-[11px] text-(--crt-red)">[ 01 {"///"} DELIVERY SYSTEMS ]</p>
+            <h2 className="crt-macro mt-3 text-[clamp(2.4rem,6vw,5.5rem)] text-(--crt-ink)">
+              FOUR DOORS.
+              <br />
+              ONE WORKSPACE.
+            </h2>
+          </div>
+          <p className="crt-micro max-w-xs text-[11px] leading-relaxed text-(--crt-dim)">
+            SELECT AN ENTRY POINT. EACH UNIT OPENS EXACTLY WHERE YOU EXPECT. NO
+            ONBOARDING. NO DECORATION.
+          </p>
+        </div>
+        <div className="border-t border-(--crt-line)">
+          <FeatureAccordion />
+        </div>
+        {/* stat readout band */}
+        <dl className="crt-grid-lines grid-cols-2 md:grid-cols-4">
+          {[
+            ["083+", "PYQ UNITS", "BANK / LIVE"],
+            ["08", "SUBJECTS", "COVERAGE / FULL"],
+            ["04", "ENTRY DOORS", "ACCESS / OPEN"],
+            ["01", "MENTOR", "CONTEXT / LOCKED"],
+          ].map(([value, label, sub]) => (
+            <div key={label} className="px-4 py-6 sm:px-8">
+              <dd className="crt-macro text-[clamp(2.4rem,5vw,4.5rem)] text-(--crt-ink)">
+                {value}
+                <span className="text-(--crt-red)">.</span>
+              </dd>
+              <dt className="crt-micro mt-2 text-[10px] text-(--crt-ink)">{label}</dt>
+              <p className="crt-micro text-[10px] text-(--crt-dim)">{sub}</p>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      {/* 02 — PROTOCOL */}
+      <section aria-label="Protocol" className="border-b-2 border-(--crt-ink)">
+        <div className="flex flex-wrap items-end justify-between gap-4 px-4 pb-8 pt-14 sm:px-8">
+          <div>
+            <p className="crt-micro text-[11px] text-(--crt-red)">[ 02 {"///"} OPERATING PROTOCOL ]</p>
+            <h2 className="crt-macro mt-3 text-[clamp(2.4rem,6vw,5.5rem)] text-(--crt-ink)">
+              ATTEMPT. MISS.
+              <br />
+              PATCH. RETAIN.
+            </h2>
+          </div>
+          <p className="crt-micro max-w-xs text-[11px] leading-relaxed text-(--crt-dim)">
+            THE LOOP IS THE PRODUCT. EVERY ATTEMPT TEACHES: THE TRAP, THE
+            CONCEPT, THE FASTEST WAY BACK.
+          </p>
+        </div>
+        <ScaleGallery
+          images={[
+            {
+              src: "phase-01",
+              alt: "TIMED PYQ ATTEMPT UNDER EXAM PRESSURE",
+              caption: "ATTEMPT WITH INTENT",
+            },
+            {
+              src: "phase-02",
+              alt: "STEP-BY-STEP MENTOR DISSECTION OF EACH MISS",
+              caption: "UNDERSTAND EVERY MISS",
+            },
+            {
+              src: "phase-03",
+              alt: "BOOKMARKED REVISION QUEUE BEFORE EXAM DAY",
+              caption: "RETAIN WHAT MATTERS",
+            },
+          ]}
+        />
+      </section>
+
+      {/* 03 — SIGNAL TABLE */}
+      <section aria-label="Signal table" className="border-b-2 border-(--crt-ink)">
+        <div className="px-4 pb-8 pt-14 sm:px-8">
+          <p className="crt-micro text-[11px] text-(--crt-red)">[ 03 {"///"} SIGNAL TABLE ]</p>
+          <h2 className="crt-macro mt-3 text-[clamp(2.4rem,6vw,5.5rem)] text-(--crt-ink)">
+            READ THE BOARD.
+          </h2>
+        </div>
+        <div className="overflow-x-auto border-t border-(--crt-line)">
+          <table className="crt-micro w-full min-w-[640px] border-collapse text-left text-[11px] sm:text-[12px]">
+            <thead>
+              <tr className="border-b-2 border-(--crt-ink) text-(--crt-dim)">
+                <th scope="col" className="px-4 py-3 font-normal sm:px-8">SUBJECT</th>
+                <th scope="col" className="px-4 py-3 font-normal">CODE</th>
+                <th scope="col" className="px-4 py-3 font-normal">VOLUME</th>
+                <th scope="col" className="px-4 py-3 font-normal">ASSESSMENT</th>
+                <th scope="col" className="px-4 py-3 text-right font-normal sm:px-8">FEED</th>
+              </tr>
+            </thead>
+            <tbody>
+              {SIGNAL_ROWS.map(([subject, code, volume, assessment], i) => (
+                <tr
+                  key={code}
+                  className="border-b border-(--crt-line) text-(--crt-ink) transition-colors last:border-b-0 hover:bg-(--crt-red) hover:text-(--crt-bg)"
+                >
+                  <th scope="row" className="px-4 py-4 font-bold sm:px-8">
+                    {String(i + 1).padStart(2, "0")} {"///"} {subject}
+                  </th>
+                  <td className="px-4 py-4">
+                    <samp>[{code}]</samp>
+                  </td>
+                  <td className="px-4 py-4">
+                    <data value={volume}>{volume}</data>
+                  </td>
+                  <td className="px-4 py-4">{assessment}</td>
+                  <td className="px-4 py-4 text-right sm:px-8">++++</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <ScrubReveal text="YOU DO NOT NEED MORE MATERIAL. YOU NEED EVERY ATTEMPT TO TEACH YOU SOMETHING — THE TRAP YOU FELL FOR, THE CONCEPT UNDERNEATH IT, AND THE FASTEST WAY BACK." />
+
+      {/* TERMINAL CLOSE */}
+      <section aria-label="Initiate" className="relative">
+        <div aria-hidden="true" className="crt-scanlines pointer-events-none absolute inset-0" />
+        <div className="relative px-4 pb-0 pt-16 sm:px-8 sm:pt-24">
+          <p className="crt-micro text-[11px] text-(--crt-red)">[ FINAL TRANSMISSION {"///"} AUTH REQUIRED ]</p>
+          <h2 className="crt-macro crt-phosphor mt-4 text-[clamp(3rem,9vw,10rem)] text-(--crt-ink)">
+            STOP GUESSING.
+            <br />
+            START <span className="text-(--crt-red) [text-shadow:none]">KNOWING.</span>
+          </h2>
+          <p className="crt-micro mt-6 max-w-xl text-[11px] leading-relaxed text-(--crt-dim) sm:text-[12px]">
+            ONE ACCOUNT KEEPS YOUR ATTEMPTS, BOOKMARKS, AND MENTOR CHATS IN
+            SYNC. INITIALIZE BELOW. NO TRIAL TIERS. NO NOISE.
+          </p>
+          <div className="mt-10 grid gap-px border-2 border-(--crt-ink) bg-(--crt-ink) sm:grid-cols-2">
+            <SignInDialog
+              configured={configured}
+              triggerClassName="crt-micro bg-(--crt-red) px-8 py-6 text-center text-[14px] font-bold text-(--crt-bg) transition-colors hover:bg-(--crt-ink)"
+            >
+              SIGN IN WITH GOOGLE &gt;&gt;&gt;
+            </SignInDialog>
             <Link
               href="/practice"
-              className={cn(buttonVariants({ variant: "ghost" }), "rounded-full")}
+              className="crt-micro bg-(--crt-bg) px-8 py-6 text-center text-[14px] text-(--crt-ink) transition-colors hover:bg-(--crt-ink) hover:text-(--crt-bg)"
             >
-              Practice
+              OPEN THE QUESTION BANK +
             </Link>
-            <Link
-              href="/mentor"
-              className={cn(
-                buttonVariants({ variant: "ghost" }),
-                "hidden rounded-full sm:inline-flex",
-              )}
-            >
-              Mentor
-            </Link>
-            <Link href="/sign-in" className={cn(buttonVariants(), "rounded-full")}>
-              Sign in
-            </Link>
-          </nav>
+          </div>
         </div>
-      </header>
-
-      <main id="main" className="flex flex-1 flex-col">
-        {/* Editorial split hero over ambient orbs */}
-        <section
-          aria-labelledby="hero-heading"
-          className="relative overflow-hidden"
-        >
-          <div className="orbs" aria-hidden="true" />
-          <div className="relative mx-auto grid w-full max-w-5xl gap-12 px-4 py-24 sm:px-6 md:grid-cols-2 md:py-40">
-            <Reveal className="flex max-w-xl flex-col justify-center">
-              <span className="eyebrow mb-6 self-start">
-                GATE CS / IT · PYQ practice + AI tutor
-              </span>
-              <h1
-                id="hero-heading"
-                className="text-balance text-5xl font-semibold leading-[1.05] tracking-[-0.02em] sm:text-6xl"
+        <footer className="relative mt-16 border-t-2 border-(--crt-ink)">
+          <div className="grid gap-px bg-(--crt-line) md:grid-cols-[1fr_auto_1fr]">
+            <p className="crt-micro bg-(--crt-bg) px-4 py-4 text-[11px] text-(--crt-ink) sm:px-8">
+              GATE-MENTOR® {"///"} <span className="text-(--crt-dim)">FIELD MANUAL REV 2.6</span>
+            </p>
+            <nav aria-label="Footer" className="crt-micro flex bg-(--crt-bg) text-[11px]">
+              <Link href="/practice" className="border-x border-(--crt-line) px-5 py-4 transition-colors hover:bg-(--crt-ink) hover:text-(--crt-bg)">
+                PRACTICE
+              </Link>
+              <Link href="/mentor" className="border-r border-(--crt-line) px-5 py-4 transition-colors hover:bg-(--crt-ink) hover:text-(--crt-bg)">
+                MENTOR
+              </Link>
+              <SignInDialog
+                configured={configured}
+                triggerClassName="px-5 py-4 transition-colors hover:bg-(--crt-ink) hover:text-(--crt-bg)"
               >
-                Practice previous-year questions. Understand every option.
-              </h1>
-              <p className="prose-study mt-6 text-base leading-7 text-muted-foreground">
-                GATE Mentor pairs subject-wise PYQ practice with a persistent
-                Mentor that diagnoses misconceptions first and explains step
-                by step — with math and code rendered clearly.
-              </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <IslandCta href="/practice">Start practicing</IslandCta>
-                <IslandCta href="/mentor" variant="ghost">
-                  Ask Mentor
-                </IslandCta>
-              </div>
-            </Reveal>
-
-            <Reveal
-              delay={150}
-              className="flex flex-col justify-center gap-4"
-            >
-              <div className="bezel">
-                <Card>
-                  <CardHeader>
-                    <Badge variant="secondary" className="mb-2 w-fit">
-                      OS · CPU Scheduling · GATE 2020
-                    </Badge>
-                    <CardTitle className="text-base font-medium leading-6">
-                      Three processes arrive for FCFS…
-                    </CardTitle>
-                    <CardDescription>
-                      MCQ · 2 marks · avg. waiting time
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex flex-col gap-2 text-sm">
-                    {["5.67 — correct, waiting adds up", "4.00 — forgot P3 queues", "6.33 — counted turnaround"].map(
-                      (line) => (
-                        <span
-                          key={line}
-                          className="rounded-lg bg-muted px-3 py-2 text-muted-foreground"
-                        >
-                          {line}
-                        </span>
-                      ),
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-              <div className="bezel md:ml-12">
-                <Card>
-                  <CardContent className="flex items-center gap-3 pt-6">
-                    <span
-                      aria-hidden="true"
-                      className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
-                    >
-                      <ArrowUpRight className="size-4" strokeWidth={1.5} />
-                    </span>
-                    <p className="text-sm leading-6">
-                      <strong className="font-medium">Mentor:</strong>{" "}
-                      <span className="text-muted-foreground">
-                        “P2 waits 7, not 4 — it arrives at 1 but starts at
-                        8. That gap is the whole question.”
-                      </span>
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* Asymmetrical bento */}
-        <section
-          aria-labelledby="modes-heading"
-          className="mx-auto grid w-full max-w-5xl gap-4 px-4 py-24 sm:px-6 md:grid-cols-12"
-        >
-          <h2 id="modes-heading" className="sr-only">
-            Study modes
-          </h2>
-          <Reveal className="md:col-span-7" delay={0}>
-            <div className="bezel h-full">
-              <Card className="justify-center">
-                <CardHeader>
-                  <span className="eyebrow mb-3 w-fit">Practice Mode</span>
-                  <CardTitle className="text-2xl">
-                    Filter by subject, topic, year, type, difficulty.
-                  </CardTitle>
-                  <CardDescription>
-                    MCQ, MSQ, and NAT flows with server-validated attempts,
-                    timing, solutions, and bookmarks.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <IslandCta href="/practice" variant="ghost">
-                    Open the bank
-                  </IslandCta>
-                </CardContent>
-              </Card>
+                SIGN-IN
+              </SignInDialog>
+            </nav>
+            <div className="flex items-center gap-4 bg-(--crt-bg) px-4 py-4 sm:px-8">
+              <span aria-hidden="true" className="crt-barcode h-6 flex-1 text-(--crt-ink)" />
+              <span className="crt-micro text-[10px] text-(--crt-dim)">©2026 {"///"} END</span>
             </div>
-          </Reveal>
-          <div className="flex flex-col gap-4 md:col-span-5">
-            <Reveal delay={120} className="flex-1">
-              <div className="bezel h-full">
-                <Card>
-                  <CardHeader>
-                    <span className="eyebrow mb-3 w-fit">Mentor Mode</span>
-                    <CardTitle>Persistent sessions, streamed answers.</CardTitle>
-                    <CardDescription>
-                      Markdown, LaTeX, and code — rendered safely, remembered
-                      fully.
-                    </CardDescription>
-                  </CardHeader>
-                </Card>
-              </div>
-            </Reveal>
-            <Reveal delay={220} className="flex-1">
-              <div className="bezel h-full">
-                <Card>
-                  <CardHeader>
-                    <span className="eyebrow mb-3 w-fit">The bridge</span>
-                    <CardTitle>Any question, one click, full context.</CardTitle>
-                    <CardDescription>
-                      Your pick, the right answer, the solution — Mentor
-                      already knows. No copy-paste.
-                    </CardDescription>
-                  </CardHeader>
-                </Card>
-              </div>
-            </Reveal>
           </div>
-        </section>
-      </main>
-
-      <footer className="px-4 pb-10 sm:px-6">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between rounded-full border border-white/10 bg-background/70 px-6 py-4 text-sm text-muted-foreground backdrop-blur-2xl">
-          <p>GATE Mentor · built for deep study</p>
-          <nav aria-label="Footer" className="flex gap-4">
-            <Link href="/practice" className="hover:underline">
-              Practice
-            </Link>
-            <Link href="/progress" className="hover:underline">
-              Progress
-            </Link>
-          </nav>
-        </div>
-      </footer>
-    </div>
+        </footer>
+      </section>
+    </main>
   );
 }

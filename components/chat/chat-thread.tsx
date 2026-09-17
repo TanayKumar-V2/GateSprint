@@ -2,7 +2,6 @@
 
 import { memo, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { ChatMessageBody } from "./message";
 import { readUIChunks } from "./stream";
 
@@ -28,21 +27,27 @@ const SettledMessage = memo(function SettledMessage({
   if (message.role === "user") {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[85%] rounded-xl bg-primary px-4 py-2.5 text-sm leading-7 text-primary-foreground">
+        <div className="max-w-[85%] border border-(--crt-edge) bg-(--crt-raised) px-4 py-2.5 text-sm leading-7 text-(--crt-ink)">
+          <span aria-hidden="true" className="mr-2 font-mono text-[11px] font-bold text-(--crt-red)">
+            USR&gt;
+          </span>
           <ChatMessageBody content={message.content} />
         </div>
       </div>
     );
   }
   return (
-    <div className="max-w-full">
-      <ChatMessageBody content={message.content} />
+    <article className="max-w-3xl border border-(--crt-line) bg-(--crt-bg) p-4 sm:p-5">
+      <p className="crt-micro mb-3 border-b border-(--crt-line) pb-2 text-[10px] text-(--crt-red)">
+        [ MENTOR EXPLANATION ]
+      </p>
+      <ChatMessageBody content={message.content} className="text-(--crt-ink)" />
       {message.stopped ? (
-        <p className="mt-1 text-xs text-muted-foreground">
-          Stopped — what you see above is saved.
+        <p className="crt-micro mt-2 text-[10px] text-(--crt-dim)">
+          STOPPED — WHAT YOU SEE ABOVE IS SAVED.
         </p>
       ) : null}
-    </div>
+    </article>
   );
 });
 
@@ -169,12 +174,12 @@ export function ChatThread({
         aria-live={streaming ? "off" : "polite"}
         aria-label="Conversation"
         tabIndex={0}
-        className="flex-1 space-y-6 overflow-y-auto rounded-md py-4"
+        className="flex-1 space-y-6 overflow-y-auto py-4"
       >
         {messages.length === 0 && !draft && !streaming ? (
-          <p className="text-sm text-muted-foreground">
-            Ask anything — a concept, a PYQ option that confuses you, or how
-            to approach a topic.
+          <p className="crt-micro max-w-md text-[11px] leading-relaxed text-(--crt-dim)">
+            CHANNEL OPEN. ASK ANYTHING — A CONCEPT, A PYQ OPTION THAT CONFUSES
+            YOU, OR HOW TO APPROACH A TOPIC.
           </p>
         ) : null}
         {messages.map((m) => (
@@ -182,38 +187,41 @@ export function ChatThread({
         ))}
         {draft ? (
           draft.content === "" ? (
-            <p className="text-sm text-muted-foreground" aria-label="Thinking">
-              Thinking…
+            <p className="crt-micro text-[11px] text-(--crt-ink)" aria-label="Thinking">
+              TRANSMITTING<span className="crt-blink ml-1 inline-block h-3 w-2 bg-(--crt-red) align-middle" />
             </p>
           ) : (
-            <div className="max-w-full" aria-hidden={streaming}>
-              <ChatMessageBody content={draft.content} />
-            </div>
+            <article className="max-w-3xl border border-(--crt-line) bg-(--crt-bg) p-4 sm:p-5" aria-hidden={streaming}>
+              <p className="crt-micro mb-3 border-b border-(--crt-line) pb-2 text-[10px] text-(--crt-red)">[ MENTOR EXPLANATION ]</p>
+              <ChatMessageBody content={draft.content} className="text-(--crt-ink)" />
+            </article>
           )
         ) : null}
       </div>
 
       {error ? (
-        <p role="alert" className="py-2 text-sm text-destructive">
-          {error}
+        <p role="alert" className="crt-micro py-2 text-[11px] text-(--crt-red)">
+          !! {error.toUpperCase()}
         </p>
       ) : null}
 
-      <div className="flex items-center gap-2 border-t py-3">
+      <div className="sticky bottom-0 flex items-stretch gap-px border border-(--crt-line) bg-(--crt-line)">
         {streaming ? (
-          <Button
+          <button
             type="button"
-            variant="outline"
-            className="min-h-11"
             onClick={() => abortRef.current?.abort()}
+            className="crt-btn-line min-h-11 flex-1 border-0"
           >
-            Stop
-          </Button>
+            ■ STOP
+          </button>
         ) : (
           <>
             <label htmlFor="composer" className="sr-only">
               Message Mentor
             </label>
+            <span aria-hidden="true" className="hidden items-center bg-(--crt-bg) px-5 font-mono text-[15px] font-bold text-(--crt-red) sm:flex">
+              &gt;
+            </span>
             <textarea
               id="composer"
               value={input}
@@ -225,12 +233,12 @@ export function ChatThread({
                 }
               }}
               rows={2}
-              placeholder="Ask about a concept or a question…"
-              className="min-h-10 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
+              placeholder="ASK ABOUT A CONCEPT OR A QUESTION…"
+              className="crt-field min-h-10 flex-1 border-0 text-[13px] normal-case tracking-normal"
             />
-            <Button
+            <button
               type="button"
-              className="min-h-11"
+              className="crt-btn-red min-h-11 shrink-0 border-0"
               disabled={input.trim() === ""}
               onClick={() => {
                 const text = input;
@@ -238,24 +246,24 @@ export function ChatThread({
                 void send(text, { appendUser: true });
               }}
             >
-              Send
-            </Button>
+              SEND
+            </button>
             {lastUser ? (
-              <Button
+              <button
                 type="button"
-                variant="ghost"
                 title="Get a fresh reply to the last message (added below, history kept)"
                 onClick={() => void send(lastUser.content, { appendUser: false })}
+                className="crt-btn-line min-h-11 shrink-0 border-0 border-l border-(--crt-line)"
               >
-                Retry
-              </Button>
+                RETRY
+              </button>
             ) : null}
           </>
         )}
       </div>
-      <p className="pb-1 text-xs text-muted-foreground">
-        Enter to send · Shift+Enter for a new line. Mentor can make mistakes
-        — verify against solutions and standard texts.
+      <p className="crt-micro mt-3 pb-1 text-[10px] leading-relaxed text-(--crt-dim)">
+        ENTER TO SEND · SHIFT+ENTER FOR NEW LINE. MENTOR CAN MAKE MISTAKES
+        — VERIFY AGAINST SOLUTIONS AND STANDARD TEXTS.
       </p>
     </div>
   );

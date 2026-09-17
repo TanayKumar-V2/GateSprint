@@ -14,6 +14,10 @@ import { attemptSubmissionSchema } from "@/lib/validation/answers";
 /**
  * Grade and record an answer. Correctness is recomputed server-side;
  * anything the client claims about being right is ignored.
+ *
+ * Questions without a stored key are AI-graded on the first attempt
+ * (answer cached for later attempts). Nothing is recorded when the
+ * grader cannot judge or is unavailable.
  */
 export async function POST(request: Request) {
   const userId = await currentUserId();
@@ -38,6 +42,10 @@ export async function POST(request: Request) {
   const result = await submitAttempt(userId, parsed.data);
   if ("error" in result) {
     if (result.error === "not_found") return notFoundPrivate();
+    if (result.error === "needs_review")
+      return NextResponse.json({ error: { code: "needs_review", message: result.message } }, { status: 422 });
+    if (result.error === "ai_unavailable")
+      return NextResponse.json({ error: { code: "ai_unavailable", message: result.message } }, { status: 503 });
     return badRequest(result.message);
   }
   return NextResponse.json(

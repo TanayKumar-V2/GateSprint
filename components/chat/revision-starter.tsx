@@ -2,14 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 /**
  * Entry from a weak-topic recommendation: starts a revision session the
@@ -52,26 +44,28 @@ export function RevisionStarter({
   }
 
   return (
-    <Card className="border-primary/40">
-      <CardHeader>
-        <CardTitle className="text-base">
-          Revise {subjectName} · {topicName} with Mentor?
-        </CardTitle>
-        <CardDescription>
-          Opens a focused session briefed on your accuracy and recent misses
-          in this topic.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Button type="button" onClick={start} disabled={busy}>
-          {busy ? "Starting…" : "Start revision session"}
-        </Button>
-        {error ? (
-          <p role="alert" className="mt-2 text-sm text-destructive">
-            {error}
+    <div className="border-2 border-(--crt-red) bg-(--crt-bg)">
+      <p className="crt-micro border-b border-(--crt-red) px-4 py-2 text-[10px] text-(--crt-red)">
+        [ REVISION BRIEF {"///"} TARGET LOCKED ]
+      </p>
+      <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-base font-bold uppercase tracking-tight text-(--crt-ink)">
+            Revise {subjectName} · {topicName}?
           </p>
-        ) : null}
-      </CardContent>
-    </Card>
+          <p className="crt-micro mt-1 text-[10px] leading-relaxed text-(--crt-dim)">
+            OPENS A FOCUSED SESSION BRIEFED ON YOUR ACCURACY AND RECENT MISSES.
+          </p>
+        </div>
+        <button type="button" onClick={start} disabled={busy} className="crt-btn-red shrink-0">
+          {busy ? "STARTING…" : "START REVISION >>>"}
+        </button>
+      </div>
+      {error ? (
+        <p role="alert" className="crt-micro border-t border-(--crt-line) px-4 py-2 text-[11px] text-(--crt-red)">
+          !! {error.toUpperCase()}
+        </p>
+      ) : null}
+    </div>
   );
 }

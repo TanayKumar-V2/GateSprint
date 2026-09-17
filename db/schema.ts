@@ -36,7 +36,9 @@ export const generationStatusEnum = pgEnum("generation_status", [
 
 /* ---------- Structured answer shapes ----------
    MSQ answers are always arrays of option ids — never comma strings.
-   NAT answers are numbers with a per-question absolute tolerance. */
+   NAT answers are numbers with a per-question absolute tolerance.
+   correctAnswer is NULL until known: imports store no key, and the first
+   student attempt triggers AI grading which caches the answer. */
 
 export type QuestionOption = { id: string; text: string };
 export type CorrectAnswer =
@@ -56,6 +58,12 @@ export const users = pgTable("users", {
   email: text("email").unique(),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
+  // Public handle for /u/[username] profiles. NULL only for rows created
+  // before the handle existed — backfilled on first sight and assigned
+  // for every new sign-up, so profile URLs stay stable.
+  username: text("username").unique(),
+  // scrypt hash for email+password sign-in. NULL for OAuth-only accounts.
+  passwordHash: text("password_hash"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -144,14 +152,16 @@ export const questions = pgTable(
     difficulty: difficultyEnum("difficulty").notNull(),
     prompt: text("prompt").notNull(),
     options: jsonb("options").$type<QuestionOption[]>(),
-    correctAnswer: jsonb("correct_answer").$type<CorrectAnswer>().notNull(),
+    // NULL until known: imports store no key; the first attempt triggers
+    // AI grading, which caches the answer here for all later attempts.
+    correctAnswer: jsonb("correct_answer").$type<CorrectAnswer | null>(),
     marks: real("marks").notNull().default(1),
     negativeMarks: real("negative_marks").notNull().default(0),
     sourceLabel: text("source_label"),
     externalId: text("external_id"),
     sourcePage: integer("source_page"),
     extractionConfidence: real("extraction_confidence"),
-    isPublished: boolean("is_published").notNull().default(false),
+    isPublished: boolean("is_published").notNull().default(true),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
@@ -177,6 +187,34 @@ export const solutions = pgTable(
   },
   (t) => [
     unique("solutions_question_type_unique").on(t.questionId, t.solutionType),
+  ],
+);
+
+/* ---------- Question figures (diagrams extracted from PDFs) ----------
+   Small raster images stored as base64 text — or a CDN url when the
+   extractor uploads to ImageKit — so both database drivers (Neon HTTP and
+   node-postgres) behave identically with no binary-column quirks. Served
+   through /api/questions/[id]/images/[imageId] (CDN urls redirect). */
+
+export const questionImages = pgTable(
+  "question_images",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    questionId: uuid("question_id")
+      .notNull()
+      .references(() => questions.id, { onDelete: "cascade" }),
+    position: integer("position").notNull().default(0),
+    filename: text("filename").notNull(),
+    mime: text("mime").notNull(),
+    width: integer("width"),
+    height: integer("height"),
+    dataBase64: text("data_base64"),
+    url: text("url"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [
+    index("question_images_question_idx").on(t.questionId),
+    unique("question_images_question_position_unique").on(t.questionId, t.position),
   ],
 );
 
@@ -297,6 +335,7 @@ export const questionsRelations = relations(questions, ({ one, many }) => ({
     references: [topics.id],
   }),
   solutions: many(solutions),
+  images: many(questionImages),
   attempts: many(attempts),
   bookmarks: many(bookmarks),
 }));
@@ -320,5 +359,12 @@ export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
   session: one(chatSessions, {
     fields: [chatMessages.sessionId],
     references: [chatSessions.id],
+  }),
+}));
+
+export const questionImagesRelations = relations(questionImages, ({ one }) => ({
+  question: one(questions, {
+    fields: [questionImages.questionId],
+    references: [questions.id],
   }),
 }));

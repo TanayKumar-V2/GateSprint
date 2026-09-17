@@ -4,15 +4,54 @@ import { currentUserId } from "@/lib/current-user";
 import { getProgress, getRecommendations } from "@/lib/progress";
 import {
   BreakdownTable,
-  MetricCard,
   RecommendationCard,
 } from "@/components/progress/cards";
 import { Reveal } from "@/components/motion/reveal";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { ProgressCharts } from "@/components/progress/charts";
 
 function pct(accuracy: number | null): string {
   return accuracy === null ? "—" : `${Math.round(accuracy * 100)}%`;
+}
+
+/**
+ * Static accuracy ring: one SVG circle, no animation, no library.
+ * Phosphor readout, red sweep, dark track.
+ */
+function AccuracyRing({ accuracy }: { accuracy: number | null }) {
+  const radius = 52;
+  const circumference = 2 * Math.PI * radius;
+  const fraction = accuracy ?? 0;
+  return (
+    <div
+      role="img"
+      aria-label={accuracy === null ? "No attempts yet" : `Accuracy ${pct(accuracy)}`}
+      className="relative grid size-32 shrink-0 place-items-center"
+    >
+      <svg viewBox="0 0 120 120" className="absolute inset-0 -rotate-90" aria-hidden="true">
+        <circle
+          cx="60"
+          cy="60"
+          r={radius}
+          fill="none"
+          style={{ stroke: "var(--crt-line)" }}
+          strokeWidth="10"
+        />
+        <circle
+          cx="60"
+          cy="60"
+          r={radius}
+          fill="none"
+          style={{ stroke: "var(--crt-red)" }}
+          strokeWidth="10"
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference * (1 - fraction)}
+        />
+      </svg>
+      <span className="crt-macro text-2xl tabular-nums text-(--crt-ink)">
+        {pct(accuracy)}
+      </span>
+    </div>
+  );
 }
 
 export default async function ProgressPage() {
@@ -26,16 +65,19 @@ export default async function ProgressPage() {
   if (overall.attempts === 0) {
     return (
       <div className="mx-auto flex max-w-2xl flex-col gap-6">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Progress</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Nothing attempted yet — your stats will build as you practice.
+        <header>
+          <p className="crt-micro text-[11px] text-(--crt-red)">[ 03 {"///"} TELEMETRY ]</p>
+          <h1 className="crt-macro mt-2 text-[clamp(2.6rem,7vw,5rem)] text-(--crt-ink)">
+            PROGRESS<span className="text-(--crt-red)">.</span>
+          </h1>
+          <p className="crt-micro mt-3 text-[11px] text-(--crt-dim)">
+            NOTHING ATTEMPTED YET — STATS BUILD AS YOU PRACTICE.
           </p>
-        </div>
+        </header>
         {recs.data.length > 0 ? (
           <section aria-labelledby="starter-heading" className="flex flex-col gap-4">
-            <h2 id="starter-heading" className="text-lg font-semibold">
-              Where to begin
+            <h2 id="starter-heading" className="crt-micro text-[11px] text-(--crt-ink)">
+              [ WHERE TO BEGIN ]
             </h2>
             <ul className="grid gap-4 md:grid-cols-2">
               {recs.data.map((r, i) => (
@@ -48,9 +90,9 @@ export default async function ProgressPage() {
         ) : (
           <Link
             href="/practice"
-            className={cn(buttonVariants(), "self-start")}
+            className="crt-btn-red self-start"
           >
-            Browse questions
+            BROWSE QUESTIONS &gt;&gt;&gt;
           </Link>
         )}
       </div>
@@ -59,41 +101,58 @@ export default async function ProgressPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Progress</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Built only from your own attempts — nothing here is estimated.
-        </p>
-      </div>
-
       <section
         aria-label="Overall"
-        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+        className="border border-(--crt-line) bg-(--crt-bg)"
       >
-        <MetricCard label="Attempts" value={String(overall.attempts)} />
-        <MetricCard label="Accuracy" value={pct(overall.accuracy)} />
-        <MetricCard
-          label="Questions tried"
-          value={`${overall.attemptedQuestions} / ${overall.totalQuestions}`}
-        />
-        <MetricCard
-          label="Weak topics"
-          value={String(progress.weakTopics.length)}
-          hint={
-            progress.weakTopics.length > 0
-              ? "Under 60% across 3+ attempts, or repeated early misses."
-              : "Nothing weak right now. Nice."
-          }
-        />
+        <p className="crt-micro border-b border-(--crt-line) px-5 py-2 text-[10px] text-(--crt-dim) sm:px-7">
+          [ 03 {"///"} TELEMETRY {"///"} OPERATOR OVERALL ]
+        </p>
+        <div className="flex flex-col gap-6 p-5 sm:flex-row sm:items-center sm:gap-8 sm:p-7">
+          <div className="flex shrink-0 items-center gap-5">
+            <AccuracyRing accuracy={overall.accuracy} />
+            <div>
+              <h1 className="crt-macro text-[clamp(2rem,5vw,3.2rem)] text-(--crt-ink)">PROGRESS<span className="text-(--crt-red)">.</span></h1>
+              <p className="crt-micro mt-2 max-w-xs text-[10px] leading-relaxed text-(--crt-dim)">
+                BUILT ONLY FROM YOUR OWN ATTEMPTS — NOTHING ESTIMATED.
+              </p>
+            </div>
+          </div>
+          <dl className="grid flex-1 grid-cols-3 gap-px border border-(--crt-line) bg-(--crt-line)">
+            <div className="bg-(--crt-bg) p-4">
+              <dt className="crt-label">Attempts</dt>
+              <dd className="crt-macro mt-1 text-3xl tabular-nums text-(--crt-ink)">
+                {overall.attempts}
+              </dd>
+            </div>
+            <div className="bg-(--crt-bg) p-4">
+              <dt className="crt-label">Tried</dt>
+              <dd className="crt-macro mt-1 text-3xl tabular-nums text-(--crt-ink)">
+                {overall.attemptedQuestions}
+                <span className="text-lg text-(--crt-dim)">
+                  /{overall.totalQuestions}
+                </span>
+              </dd>
+            </div>
+            <div className="bg-(--crt-bg) p-4">
+              <dt className="crt-label">Weak</dt>
+              <dd className="crt-macro mt-1 text-3xl tabular-nums text-(--crt-red)">
+                {progress.weakTopics.length}
+              </dd>
+            </div>
+          </dl>
+        </div>
       </section>
 
+      <ProgressCharts activity={progress.activity} subjects={progress.subjects} />
+
       <section aria-labelledby="next-heading" className="flex flex-col gap-4">
-        <h2 id="next-heading" className="text-lg font-semibold">
-          Recommended next
+        <h2 id="next-heading" className="crt-micro text-[11px] text-(--crt-ink)">
+          [ RECOMMENDED NEXT ]
         </h2>
         {recs.data.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            {recs.note ?? "All caught up."}
+          <p className="crt-micro text-[11px] text-(--crt-dim)">
+            {(recs.note ?? "ALL CAUGHT UP.").toUpperCase()}
           </p>
         ) : (
           <ul className="grid gap-4 md:grid-cols-2">
@@ -108,28 +167,28 @@ export default async function ProgressPage() {
 
       {progress.weakTopics.length > 0 ? (
         <section aria-labelledby="weak-heading" className="flex flex-col gap-4">
-          <h2 id="weak-heading" className="text-lg font-semibold">
-            Weak topics
+          <h2 id="weak-heading" className="crt-micro text-[11px] text-(--crt-red)">
+            [ WEAK TOPICS {"///"} PATCH QUEUE ]
           </h2>
-          <ul className="flex flex-col gap-2">
+          <ul className="grid gap-px border border-(--crt-line) bg-(--crt-line)">
             {progress.weakTopics.map((t) => (
               <li
                 key={`${t.subjectSlug}/${t.topicSlug}`}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-xl border p-4"
+                className="flex flex-wrap items-center justify-between gap-3 bg-(--crt-bg) p-4"
               >
                 <div>
-                  <p className="font-medium">
-                    {t.subjectName} · {t.topicName}
+                  <p className="text-sm font-bold uppercase tracking-tight text-(--crt-ink)">
+                    {t.subjectName} {"///"} {t.topicName}
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    {t.weakReason}
+                  <p className="crt-micro mt-1 text-[10px] text-(--crt-dim)">
+                    {(t.weakReason ?? "Needs work").toUpperCase()}
                   </p>
                 </div>
                 <Link
                   href={`/practice?subject=${t.subjectSlug}&topic=${t.topicSlug}`}
-                  className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+                  className="crt-btn-line !px-4 !py-2 !text-[11px]"
                 >
-                  Practice →
+                  DRILL &gt;&gt;&gt;
                 </Link>
               </li>
             ))}
@@ -138,8 +197,8 @@ export default async function ProgressPage() {
       ) : null}
 
       <section aria-labelledby="boc-subject" className="flex flex-col gap-4">
-        <h2 id="boc-subject" className="text-lg font-semibold">
-          By subject
+        <h2 id="boc-subject" className="crt-micro text-[11px] text-(--crt-ink)">
+          [ BY SUBJECT ]
         </h2>
         <BreakdownTable
           caption="Accuracy by subject"
@@ -155,8 +214,8 @@ export default async function ProgressPage() {
       </section>
 
       <section aria-labelledby="boc-topic" className="flex flex-col gap-4">
-        <h2 id="boc-topic" className="text-lg font-semibold">
-          By topic
+        <h2 id="boc-topic" className="crt-micro text-[11px] text-(--crt-ink)">
+          [ BY TOPIC ]
         </h2>
         <BreakdownTable
           caption="Accuracy by topic"

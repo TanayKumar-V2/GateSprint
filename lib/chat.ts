@@ -95,6 +95,25 @@ export async function getOwnedSession(userId: string, sessionId: string) {
   return rows[0] ?? null;
 }
 
+/**
+ * Delete a session owned by the user, messages included.
+ * Returns false when the session doesn't exist or belongs to someone else.
+ */
+export async function deleteOwnedSession(
+  userId: string,
+  sessionId: string,
+): Promise<boolean> {
+  const owned = await getOwnedSession(userId, sessionId);
+  if (!owned) return false;
+  await db.delete(chatMessages).where(eq(chatMessages.sessionId, sessionId));
+  await db
+    .delete(chatSessions)
+    .where(
+      and(eq(chatSessions.id, sessionId), eq(chatSessions.userId, userId)),
+    );
+  return true;
+}
+
 export type SessionSourceInfo =
   | {
       kind: "question";

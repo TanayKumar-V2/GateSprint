@@ -1,15 +1,16 @@
 import "server-only";
-import { and, count, desc, eq, exists, sql } from "drizzle-orm";
+import { and, count, desc, eq, exists, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   attempts,
   bookmarks,
   questions,
-  solutions,
   subjects,
   topics,
 } from "@/db/schema";
 import type { QuestionFilter } from "./validation/answers";
+import { readSolution } from "./solutions";
+import { listImagesForQuestions, type ImageMeta } from "./imports/images";
 
 export type QuestionListItem = {
   id: string;
@@ -25,6 +26,8 @@ export type QuestionListItem = {
   topic: { slug: string; name: string };
   attempted: boolean;
   bookmarked: boolean;
+  /** Figure metadata (no bytes); render via /api/questions/[id]/images/[imageId]. */
+  images: ImageMeta[];
 };
 
 export type QuestionList = {
@@ -66,6 +69,16 @@ export async function listTopics(subjectSlug?: string) {
     .from(topics)
     .where(where)
     .orderBy(topics.displayOrder);
+}
+
+export async function listPublishedYears(): Promise<number[]> {
+  const rows = await db
+    .select({ year: questions.year })
+    .from(questions)
+    .where(eq(questions.isPublished, true))
+    .groupBy(questions.year)
+    .orderBy(desc(questions.year));
+  return rows.map((r) => r.year);
 }
 
 function attemptedExists(userId: string) {
@@ -130,10 +143,9 @@ export async function listQuestions(
     const rows = await db
       .select({ id: topics.id })
       .from(topics)
-      .where(topicWhere)
-      .limit(1);
-    if (!rows[0]) return emptyPage(filter);
-    conditions.push(eq(questions.topicId, rows[0].id));
+      .where(topicWhere);
+    if (rows.length === 0) return emptyPage(filter);
+    conditions.push(inArray(questions.topicId, rows.map((row) => row.id)));
   }
   if (filter.attempted === true) conditions.push(attempted);
   if (filter.attempted === false)
@@ -176,6 +188,8 @@ export async function listQuestions(
     .limit(filter.limit)
     .offset(offset);
 
+  const imageMap = await listImagesForQuestions(rows.map((r) => r.id));
+
   return {
     data: rows.map((r) => ({
       id: r.id,
@@ -191,6 +205,7 @@ export async function listQuestions(
       topic: { slug: r.topicSlug, name: r.topicName },
       attempted: r.attempted ?? false,
       bookmarked: r.bookmarked ?? false,
+      images: imageMap.get(r.id) ?? [],
     })),
     page: filter.page,
     limit: filter.limit,
@@ -228,6 +243,8 @@ export type QuestionView = {
   solution: string | null;
   lastAttempt: LastAttempt;
   bookmarked: boolean;
+  /** Figure metadata (no bytes); render via /api/questions/[id]/images/[imageId]. */
+  images: ImageMeta[];
 };
 
 /**
@@ -286,16 +303,9 @@ export async function getQuestionView(
     )
     .limit(1);
 
-  let solution: string | null = null;
-  if (lastAttempt) {
-    const solRows = await db
-      .select({ content: solutions.content })
-      .from(solutions)
-      .where(eq(solutions.questionId, questionId))
-      .orderBy(solutions.solutionType)
-      .limit(1);
-    solution = solRows[0]?.content ?? null;
-  }
+  const solution = lastAttempt ? await readSolution(questionId) : null;
+
+  const imageMap = await listImagesForQuestions([questionId]);
 
   return {
     id: q.id,
@@ -321,5 +331,6 @@ export async function getQuestionView(
         }
       : null,
     bookmarked: bookmarkRows.length > 0,
+    images: imageMap.get(questionId) ?? [],
   };
 }

@@ -11,7 +11,7 @@ services:
       - path: .env.local
         required: false
     environment:
-      DATABASE_URL: postgresql://gate:gate@db:5432/gate_mentor
+      DATABASE_URL: ${DATABASE_URL:-postgresql://gate:gate@db:5432/gate_mentor}
       REDIS_URL: redis://redis:6379
       NEXT_PUBLIC_APP_URL: http://localhost:3000
     depends_on:

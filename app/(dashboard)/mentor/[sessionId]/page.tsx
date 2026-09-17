@@ -7,8 +7,6 @@ import {
   getSessionSourceInfo,
 } from "@/lib/chat";
 import { ChatThread } from "@/components/chat/chat-thread";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 export default async function SessionPage({
   params,
@@ -31,34 +29,36 @@ export default async function SessionPage({
   ]);
 
   return (
-    <div className="flex min-h-[70vh] flex-col">
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="truncate text-lg font-semibold">{session.title}</h2>
+    <div className="flex min-h-[70vh] flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-(--crt-line) pb-3">
+        <h2 className="crt-micro min-w-0 flex-1 truncate text-[12px] font-bold text-(--crt-ink)">
+          <span className="text-(--crt-red)">&gt;</span> {session.title.toUpperCase()}
+        </h2>
         <Link
           href="/mentor"
-          className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+          className="crt-micro shrink-0 text-[11px] text-(--crt-dim) transition-colors hover:text-(--crt-red)"
         >
-          All chats
+          [ ALL CHATS ]
         </Link>
       </div>
 
       {source ? (
         <aside
           aria-label="Source context"
-          className="mb-3 rounded-xl border bg-muted/40 p-3"
+          className="border border-(--crt-line) border-l-4 border-l-(--crt-red) bg-(--crt-bg) p-4"
         >
-          <p className="text-xs font-medium text-muted-foreground">
-            {source.kind === "question" ? "Discussing a question" : "Topic revision"}
+          <p className="crt-micro text-[10px] text-(--crt-red)">
+            {source.kind === "question" ? "BRIEF: QUESTION DOSSIER" : "BRIEF: TOPIC REVISION"}
           </p>
-          <p className="mt-0.5 text-sm font-medium">{source.heading}</p>
-          <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">
+          <p className="mt-1.5 text-sm font-bold uppercase tracking-tight text-(--crt-ink)">{source.heading}</p>
+          <p className="mt-1 line-clamp-2 text-sm leading-6 text-(--crt-dim)">
             {source.detail}
           </p>
           <Link
             href={source.href}
-            className="mt-1 inline-block text-sm underline"
+            className="crt-micro mt-2 inline-block text-[11px] text-(--crt-ink) underline decoration-(--crt-red) decoration-2 underline-offset-4 hover:text-(--crt-red)"
           >
-            {source.kind === "question" ? "Back to question →" : "Practice this topic →"}
+            {source.kind === "question" ? "BACK TO QUESTION >>>" : "PRACTICE THIS TOPIC >>>"}
           </Link>
         </aside>
       ) : null}

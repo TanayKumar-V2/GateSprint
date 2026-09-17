@@ -13,8 +13,16 @@ export default async function MentorLayout({
 
   const sessions = await listSessions(userId);
   return (
-    <div className="flex min-h-[70vh] flex-col">
-      <h1 className="mb-4 text-2xl font-semibold tracking-tight">Mentor</h1>
+    <div className="flex min-h-[70vh] flex-col gap-6">
+      <header>
+        <p className="crt-micro text-[11px] text-(--crt-red)">[ 02 {"///"} MENTOR-CHANNEL ]</p>
+        <h1 className="crt-macro mt-2 text-[clamp(2.6rem,7vw,5.5rem)] text-(--crt-ink)">
+          MENTOR<span className="text-(--crt-red)">.</span>
+        </h1>
+        <p className="crt-micro mt-3 text-[11px] text-(--crt-dim)">
+          WORK THROUGH A CONCEPT WITH CONTEXT, NOT A BLANK CHAT BOX.
+        </p>
+      </header>
       <MentorShell sessions={sessions}>{children}</MentorShell>
     </div>
   );

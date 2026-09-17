@@ -3,6 +3,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { questions, solutions, subjects, topics } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { listImagesForQuestions } from "@/lib/imports/images";
 
 const DEFAULT_ADMIN_EMAILS = ["tanayk1807@gmail.com"];
 
@@ -46,7 +47,7 @@ export async function adminAccess(): Promise<
 }
 
 export async function listAdminQuestions() {
-  return db
+  const rows = await db
     .select({
       id: questions.id,
       year: questions.year,
@@ -79,6 +80,11 @@ export async function listAdminQuestions() {
       and(eq(solutions.questionId, questions.id), eq(solutions.solutionType, "curated")),
     )
     .orderBy(desc(questions.updatedAt));
+  const imageMap = await listImagesForQuestions(rows.map((row) => row.id));
+  return rows.map((row) => ({
+    ...row,
+    images: imageMap.get(row.id) ?? [],
+  }));
 }
 
 export async function listAdminTaxonomy() {

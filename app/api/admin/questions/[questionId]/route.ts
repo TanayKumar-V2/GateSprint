@@ -35,7 +35,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ qu
   if (data.type !== "nat" && (!data.options || data.options.length < 2)) return badRequest("MCQ and MSQ questions need options.");
   const topic = await db.select({ id: topics.id }).from(topics).innerJoin(subjects, eq(topics.subjectId, subjects.id)).where(and(eq(topics.id, data.topicId), eq(subjects.id, data.subjectId))).limit(1);
   if (!topic[0]) return badRequest("Topic does not belong to the selected subject.");
-  const updated = await db.update(questions).set({ ...data, correctAnswer: data.correctAnswer as CorrectAnswer, externalId: data.externalId ?? null, sourcePage: data.sourcePage ?? null, extractionConfidence: data.extractionConfidence ?? null, updatedAt: new Date() }).where(eq(questions.id, questionId)).returning();
+  const updated = await db.update(questions).set({ ...data, correctAnswer: data.correctAnswer as CorrectAnswer | null, externalId: data.externalId ?? null, sourcePage: data.sourcePage ?? null, extractionConfidence: data.extractionConfidence ?? null, updatedAt: new Date() }).where(eq(questions.id, questionId)).returning();
   if (!updated[0]) return notFoundPrivate();
   await db.insert(solutions).values({ questionId, content: data.solution, solutionType: "curated" }).onConflictDoUpdate({ target: [solutions.questionId, solutions.solutionType], set: { content: data.solution, updatedAt: new Date() } });
   return NextResponse.json({ ok: true });

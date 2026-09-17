@@ -1,17 +1,11 @@
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import type { Recommendation } from "@/lib/progress";
 import { MathText } from "@/components/markdown/math-text";
-import { cn } from "@/lib/utils";
 
+/**
+ * Telemetry stat cell: hard-bordered compartment, dim micro label,
+ * macro phosphor readout. No rounding, no shadows.
+ */
 export function MetricCard({
   label,
   value,
@@ -22,60 +16,57 @@ export function MetricCard({
   hint?: string;
 }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardDescription>{label}</CardDescription>
-        <CardTitle className="text-3xl">{value}</CardTitle>
-      </CardHeader>
+    <div className="border border-(--crt-line) bg-(--crt-bg) p-5">
+      <p className="crt-micro text-[10px] text-(--crt-dim)">{label.toUpperCase()}</p>
+      <p className="crt-macro mt-2 text-[clamp(2rem,4vw,3rem)] tabular-nums text-(--crt-ink)">
+        {value}
+        <span className="text-(--crt-red)">.</span>
+      </p>
       {hint ? (
-        <CardContent>
-          <p className="text-sm text-muted-foreground">{hint}</p>
-        </CardContent>
+        <p className="crt-micro mt-2 text-[10px] leading-relaxed text-(--crt-dim)">{hint.toUpperCase()}</p>
       ) : null}
-    </Card>
+    </div>
   );
 }
 
 export function RecommendationCard({ rec }: { rec: Recommendation }) {
   return (
-    <div className="bezel h-full">
-      <Card>
-      <CardHeader>
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="secondary">{rec.difficulty}</Badge>
-          <Badge variant="outline">{rec.year}</Badge>
-          <Badge variant="outline">
-            {rec.marks} mark{rec.marks === 1 ? "" : "s"}
-          </Badge>
-        </div>
-        <CardTitle className="text-base font-medium leading-6">
-          {rec.subject.name} · {rec.topic.name}
-        </CardTitle>
-        <CardDescription>{rec.reason}</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
+    <article className="group flex h-full flex-col border border-(--crt-line) bg-(--crt-bg) transition-colors duration-150 hover:border-(--crt-red)">
+      <div className="flex flex-wrap items-center gap-1.5 border-b border-(--crt-line) px-4 py-2.5">
+        <span className="crt-tag crt-tag-solid">{rec.difficulty}</span>
+        <span className="crt-tag">{rec.year}</span>
+        <span className="crt-tag">
+          {rec.marks} MARK{rec.marks === 1 ? "" : "S"}
+        </span>
+      </div>
+      <div className="flex flex-1 flex-col gap-2 px-4 py-4">
+        <h3 className="text-base font-bold uppercase leading-6 tracking-tight text-(--crt-ink)">
+          {rec.subject.name} {"///"} {rec.topic.name}
+        </h3>
+        <p className="crt-micro text-[10px] leading-relaxed text-(--crt-red)">
+          DIRECTIVE: {rec.reason.toUpperCase()}
+        </p>
         <MathText
           text={rec.prompt}
           inline
-          className="line-clamp-2 text-sm leading-6 text-muted-foreground [&_.katex-display]:hidden"
+          className="line-clamp-2 text-sm leading-6 text-(--crt-dim) [&_.katex-display]:hidden"
         />
-        <div className="flex gap-2">
+        <div className="mt-auto flex flex-wrap gap-2 pt-3">
           <Link
             href={rec.practicePath}
-            className={cn(buttonVariants({ size: "sm" }))}
+            className="crt-btn-red !px-5 !py-2.5 !text-[11px]"
           >
-            Practice this
+            PRACTICE THIS
           </Link>
           <Link
             href={rec.revisePath}
-            className={cn(buttonVariants({ size: "sm", variant: "outline" }))}
+            className="crt-btn-line !px-5 !py-2.5 !text-[11px]"
           >
-            Revise with Mentor
+            REVISE WITH MENTOR
           </Link>
         </div>
-      </CardContent>
-      </Card>
-    </div>
+      </div>
+    </article>
   );
 }
 
@@ -94,48 +85,38 @@ export function BreakdownTable({
   }[];
 }) {
   return (
-    <div className="overflow-x-auto rounded-xl border">
-      <table className="w-full text-left text-sm">
+    <div className="overflow-x-auto border border-(--crt-line)">
+      <table className="crt-micro w-full min-w-[640px] border-collapse text-left text-[11px]">
         <caption className="sr-only">{caption}</caption>
         <thead>
-          <tr className="border-b bg-muted/50">
-            <th scope="col" className="px-4 py-2 font-medium">
-              Name
-            </th>
-            <th scope="col" className="px-4 py-2 font-medium">
-              Attempts
-            </th>
-            <th scope="col" className="px-4 py-2 font-medium">
-              Accuracy
-            </th>
-            <th scope="col" className="px-4 py-2 font-medium">
-              Coverage
-            </th>
-            <th scope="col" className="px-4 py-2 font-medium">
-              <span className="sr-only">Open</span>
-            </th>
+          <tr className="border-b-2 border-(--crt-ink) text-(--crt-dim)">
+            <th scope="col" className="px-4 py-3 font-normal">NAME</th>
+            <th scope="col" className="px-4 py-3 font-normal">ATTEMPTS</th>
+            <th scope="col" className="px-4 py-3 font-normal">ACCURACY</th>
+            <th scope="col" className="px-4 py-3 font-normal">COVERAGE</th>
+            <th scope="col" className="px-4 py-3 text-right font-normal">FEED</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((r) => (
-            <tr key={r.slug} className="border-b last:border-0">
-              <td className="px-4 py-2 font-medium">{r.name}</td>
-              <td className="px-4 py-2 tabular-nums">{r.attempts}</td>
-              <td className="px-4 py-2 tabular-nums">
+            <tr key={r.slug} className="border-b border-(--crt-line) text-(--crt-ink) transition-colors last:border-b-0 hover:bg-(--crt-raised)">
+              <td className="px-4 py-3 font-bold">{r.name.toUpperCase()}</td>
+              <td className="px-4 py-3 tabular-nums">{r.attempts}</td>
+              <td className="px-4 py-3 tabular-nums">
                 {r.accuracy === null ? (
-                  <span className="text-muted-foreground">No attempts yet</span>
+                  <span className="text-(--crt-dim)">NO DATA</span>
                 ) : (
                   `${Math.round(r.accuracy * 100)}%`
                 )}
               </td>
-              <td className="px-4 py-2 text-muted-foreground">{r.detail}</td>
-              <td className="px-4 py-2">
+              <td className="px-4 py-3 text-(--crt-dim)">{r.detail.toUpperCase()}</td>
+              <td className="px-4 py-3 text-right">
                 <Link
                   href={r.href}
-                  className="underline"
+                  className="font-bold text-(--crt-ink) underline decoration-(--crt-red) decoration-2 underline-offset-4 hover:text-(--crt-red)"
                   aria-label={`Practice ${r.name}`}
                 >
-                  Practice →
+                  DRILL &gt;&gt;&gt;
                 </Link>
               </td>
             </tr>

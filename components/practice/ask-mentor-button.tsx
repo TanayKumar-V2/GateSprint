@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 
 /**
  * The bridge: creates a chat session already briefed on this question
@@ -42,13 +41,13 @@ export function AskMentorButton({ questionId }: { questionId: string }) {
   }
 
   return (
-    <span className="inline-flex flex-col gap-1">
-      <Button type="button" variant="outline" onClick={ask} disabled={busy}>
-        {busy ? "Opening chat…" : "Ask Mentor about this"}
-      </Button>
+    <span className="inline-flex flex-col gap-1.5">
+      <button type="button" onClick={ask} disabled={busy} className="crt-btn-line">
+        {busy ? "OPENING CHAT…" : "< ASK MENTOR >"}
+      </button>
       {error ? (
-        <span role="alert" className="text-xs text-destructive">
-          {error}
+        <span role="alert" className="crt-micro text-[10px] text-(--crt-red)">
+          !! {error.toUpperCase()}
         </span>
       ) : null}
     </span>

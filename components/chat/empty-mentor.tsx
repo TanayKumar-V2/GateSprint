@@ -2,14 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 const STARTERS = [
   "Explain Big-O notation like I'm revising the night before GATE.",
@@ -42,23 +34,23 @@ export function SuggestionGrid() {
   }
 
   return (
-    <ul className="grid gap-3 sm:grid-cols-2">
-      {STARTERS.map((prompt) => (
-        <li key={prompt}>
-          <Card className="h-full">
-            <CardContent className="flex h-full flex-col items-start gap-3 pt-6">
-              <p className="text-sm leading-6">{prompt}</p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={busy !== null}
-                onClick={() => void ask(prompt)}
-              >
-                {busy === prompt ? "Starting…" : "Ask this"}
-              </Button>
-            </CardContent>
-          </Card>
+    <ul className="grid gap-px border border-(--crt-line) bg-(--crt-line) sm:grid-cols-2" aria-label="Suggested questions">
+      {STARTERS.map((prompt, i) => (
+        <li key={prompt} className="group flex flex-col justify-between gap-4 bg-(--crt-bg) p-4 transition-colors hover:bg-(--crt-raised)">
+          <p className="text-sm leading-6 text-(--crt-ink)">
+            <span aria-hidden="true" className="crt-micro mr-2 text-[10px] text-(--crt-red)">
+              Q{i + 1}
+            </span>
+            {prompt}
+          </p>
+          <button
+            type="button"
+            disabled={busy !== null}
+            onClick={() => void ask(prompt)}
+            className="crt-micro self-start border border-(--crt-edge) px-4 py-2 text-[11px] text-(--crt-ink) transition-colors hover:bg-(--crt-red) hover:text-(--crt-bg) disabled:opacity-45"
+          >
+            {busy === prompt ? "OPENING…" : "ASK THIS >>>"}
+          </button>
         </li>
       ))}
     </ul>
@@ -67,26 +59,26 @@ export function SuggestionGrid() {
 
 export function EmptyMentor() {
   return (
-    <div className="flex max-w-2xl flex-col gap-6 py-4">
+    <div className="flex max-w-2xl flex-col gap-6 py-2">
       <div>
-        <h2 className="text-xl font-semibold">What should we work on?</h2>
-        <CardDescription className="mt-1">
-          Your veteran GATE tutor: misconceptions first, step-by-step after,
-          exam traps included. Pick a starter or type your own question below —
-          a fresh chat opens automatically.
-        </CardDescription>
+        <h2 className="crt-macro text-[clamp(1.8rem,5vw,3rem)] text-(--crt-ink)">
+          WHAT SHOULD<br />WE WORK ON<span className="text-(--crt-red)">?</span>
+        </h2>
+        <p className="crt-micro mt-3 max-w-xl text-[11px] leading-relaxed text-(--crt-dim)">
+          YOUR VETERAN GATE TUTOR: MISCONCEPTIONS FIRST, STEP-BY-STEP AFTER,
+          EXAM TRAPS INCLUDED. PICK A STARTER OR TYPE YOUR OWN BELOW — A FRESH
+          CHAT OPENS AUTOMATICALLY.
+        </p>
       </div>
       <SuggestionGrid />
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Good things to ask</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm leading-6 text-muted-foreground">
+      <div className="border border-(--crt-line) bg-(--crt-bg) p-4">
+        <p className="crt-micro text-[10px] text-(--crt-red)">[ GOOD THINGS TO ASK ]</p>
+        <p className="mt-2 text-sm leading-6 text-(--crt-dim)">
           “Why is option B wrong here?” · “Explain paging vs segmentation in 5
           lines.” · “How do I spot a DP problem in GATE?” · Anything from a
           question page via Ask Mentor.
-        </CardContent>
-      </Card>
+        </p>
+      </div>
     </div>
   );
 }

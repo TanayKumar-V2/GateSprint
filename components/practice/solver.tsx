@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { MathText } from "@/components/markdown/math-text";
+import { isFigurePlaceholder } from "@/components/questions/question-figures";
 import type { QuestionView } from "@/lib/questions";
 
 type ResultState = {
@@ -10,6 +10,8 @@ type ResultState = {
   correctAnswer: unknown;
   solution: string | null;
   deduped: boolean;
+  aiGraded: boolean;
+  explanation: string | null;
 };
 
 function answerSummary(
@@ -54,20 +56,30 @@ export function BookmarkButton({
   }
 
   return (
-    <Button
+    <button
       type="button"
-      variant="outline"
-      size="sm"
       onClick={toggle}
       disabled={busy}
       aria-pressed={saved}
+      className="crt-micro border border-(--crt-edge) px-4 py-2 text-[11px] text-(--crt-ink) transition-colors hover:bg-(--crt-ink) hover:text-(--crt-bg) disabled:opacity-45"
     >
-      {saved ? "Saved ✓" : "Save for later"}
-    </Button>
+      {saved ? "SAVED ✓" : "SAVE FOR LATER"}
+    </button>
   );
 }
 
-export function QuestionSolver({ view }: { view: QuestionView }) {
+export function QuestionSolver({
+  view,
+  figureNotice,
+}: {
+  view: QuestionView;
+  /**
+   * Set when options contain image-only placeholders: "below" means
+   * unmapped diagrams are rendered with the figures, "missing" means the
+   * import lost them entirely.
+   */
+  figureNotice?: "below" | "missing" | null;
+}) {
   const [selected, setSelected] = useState<string[]>(() => {
     const last = view.lastAttempt?.selectedAnswer as
       | { optionId?: string; optionIds?: string[] }
@@ -92,6 +104,8 @@ export function QuestionSolver({ view }: { view: QuestionView }) {
           correctAnswer: view.correctAnswer,
           solution: view.solution,
           deduped: false,
+          aiGraded: false,
+          explanation: null,
         }
       : null,
   );
@@ -140,10 +154,24 @@ export function QuestionSolver({ view }: { view: QuestionView }) {
           correctAnswer: unknown;
           solution: string | null;
           deduped: boolean;
+          aiGraded: boolean;
+          explanation: string | null;
         };
-        error?: { message: string };
+        error?: { code?: string; message: string };
       };
       if (!res.ok) {
+        if (data.error?.code === "needs_review") {
+          setSubmitError(null);
+          setResult({
+            isCorrect: false,
+            correctAnswer: null,
+            solution: null,
+            deduped: false,
+            aiGraded: false,
+            explanation: data.error.message,
+          });
+          return;
+        }
         setSubmitError(data.error?.message ?? "Couldn't save that. Try again.");
         return;
       }
@@ -152,6 +180,8 @@ export function QuestionSolver({ view }: { view: QuestionView }) {
         correctAnswer: data.result!.correctAnswer,
         solution: data.result!.solution,
         deduped: data.result!.deduped,
+        aiGraded: data.result!.aiGraded ?? false,
+        explanation: data.result!.explanation ?? null,
       });
     } catch {
       setSubmitError("Network hiccup — nothing was recorded twice. Try again.");
@@ -172,11 +202,27 @@ export function QuestionSolver({ view }: { view: QuestionView }) {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <form onSubmit={onSubmit} aria-label="Your answer">
+    <div className="flex flex-col gap-5 border border-(--crt-line) bg-(--crt-bg)">
+      <p className="crt-micro border-b border-(--crt-line) px-4 py-2 text-[10px] text-(--crt-dim) sm:px-5">
+        [ RESPONSE TERMINAL {"///"} {view.type.toUpperCase()} INPUT ]
+      </p>
+      {figureNotice ? (
+        <p
+          role="note"
+          className="crt-micro mx-4 border border-(--crt-red) px-3 py-2.5 text-[10px] leading-relaxed text-(--crt-ink) sm:mx-5"
+        >
+          <span className="font-bold text-(--crt-red)">
+            {figureNotice === "below" ? "[ OPTION DIAGRAMS ]" : "[ DIAGRAMS MISSING ]"}
+          </span>{" "}
+          {figureNotice === "below"
+            ? "FIGURES BELOW INCLUDE THE OPTION DIAGRAMS — MATCH THEM TO A–D YOURSELF. ORDER IS UNVERIFIED."
+            : "THIS IMPORT DID NOT CAPTURE THE OPTION DIAGRAMS. FLAGGED FOR REVIEW — GRADING MAY BE UNAVAILABLE."}
+        </p>
+      ) : null}
+      <form onSubmit={onSubmit} aria-label="Your answer" className="flex flex-col gap-4 px-4 pb-5 sm:px-5">
         {view.type === "nat" ? (
-          <label className="flex max-w-xs flex-col gap-2 text-sm font-medium">
-            Your answer (number)
+          <label className="flex max-w-xs flex-col gap-1.5">
+            <span className="crt-label">Your answer (number)</span>
             <input
               type="number"
               step="any"
@@ -185,12 +231,12 @@ export function QuestionSolver({ view }: { view: QuestionView }) {
               onChange={(e) => setNatValue(e.target.value)}
               disabled={result !== null}
               required
-              className="h-10 rounded-md border border-input bg-background px-3"
+              className="crt-field"
             />
           </label>
         ) : (
           <fieldset disabled={result !== null} className="flex flex-col gap-2">
-            <legend className="mb-1 text-sm font-medium">
+            <legend className="crt-label mb-1">
               {view.type === "mcq"
                 ? "Pick one option"
                 : "Pick all options that apply"}
@@ -200,7 +246,7 @@ export function QuestionSolver({ view }: { view: QuestionView }) {
               return (
                 <label
                   key={option.id}
-                  className="flex cursor-pointer items-start gap-3 rounded-lg border p-3 text-sm leading-6 has-checked:border-primary has-checked:bg-muted"
+                  className="flex cursor-pointer items-start gap-3 border border-(--crt-edge) bg-(--crt-bg) p-3 text-sm leading-6 text-(--crt-ink) transition-colors duration-150 has-checked:border-(--crt-red) has-checked:bg-(--crt-raised)"
                 >
                   <input
                     type={view.type === "mcq" ? "radio" : "checkbox"}
@@ -208,11 +254,15 @@ export function QuestionSolver({ view }: { view: QuestionView }) {
                     value={option.id}
                     checked={checked}
                     onChange={() => toggleOption(option.id)}
-                    className="mt-1 size-4"
+                    className="crt-check mt-1"
                   />
                   <span>
-                    <strong className="mr-2">{option.id}.</strong>
-                    <MathText text={option.text} inline />
+                    <strong className="mr-2 font-mono text-(--crt-red)">{option.id}.</strong>
+                    {isFigurePlaceholder(option.text) ? (
+                      <span className="crt-tag crt-tag-red">FIGURE</span>
+                    ) : (
+                      <MathText text={option.text} inline />
+                    )}
                   </span>
                 </label>
               );
@@ -221,28 +271,28 @@ export function QuestionSolver({ view }: { view: QuestionView }) {
         )}
 
         {submitError ? (
-          <p role="alert" className="mt-3 text-sm text-destructive">
-            {submitError}
+          <p role="alert" className="crt-micro text-[11px] text-(--crt-red)">
+            !! {submitError}
           </p>
         ) : null}
 
-        <div className="mt-4 flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {result ? (
-            <Button
+            <button
               type="button"
-              variant="outline"
               onClick={() => {
                 setResult(null);
                 setSelected([]);
                 setNatValue("");
               }}
+              className="crt-btn-line"
             >
-              Try again
-            </Button>
+              TRY AGAIN
+            </button>
           ) : (
-            <Button type="submit" disabled={!canSubmit}>
-              {submitting ? "Checking…" : "Submit answer"}
-            </Button>
+            <button type="submit" disabled={!canSubmit} className="crt-btn-red">
+              {submitting ? "CHECKING…" : "SUBMIT ANSWER >>>"}
+            </button>
           )}
           <BookmarkButton questionId={view.id} initial={view.bookmarked} />
         </div>
@@ -252,31 +302,41 @@ export function QuestionSolver({ view }: { view: QuestionView }) {
         <section
           aria-live="polite"
           aria-label="Result"
-          className="flex flex-col gap-4 rounded-xl border p-4"
+          className="flex flex-col gap-4 border-t-2 border-(--crt-ink) px-4 py-5 sm:px-5"
         >
-          <p
-            className={`text-base font-semibold ${result.isCorrect ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400"}`}
-          >
-            {result.isCorrect ? "✓ Correct" : "✗ Not quite"} — answer:{" "}
-            {answerSummary(view.type, result.correctAnswer)}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            {view.marks} mark{view.marks === 1 ? "" : "s"}
-            {view.negativeMarks > 0 && !result.isCorrect
-              ? ` · −${view.negativeMarks} on a wrong attempt`
-              : ""}
-          </p>
-          {result.solution ? (
-            <details open className="rounded-lg bg-muted p-3">
-              <summary className="cursor-pointer text-sm font-medium">
-                Solution
-              </summary>
-              <MathText
-                text={result.solution}
-                className="mt-2 text-sm leading-7 [&_p]:my-2"
-              />
-            </details>
-          ) : null}
+          {result.explanation ? (
+            <div className="border border-(--crt-red) p-4">
+              <p className="crt-micro text-[11px] font-bold text-(--crt-red)">NEEDS REVIEW</p>
+              <p className="mt-2 text-sm leading-6 text-(--crt-ink)">
+                {result.explanation}
+              </p>
+              <p className="crt-micro mt-2 text-[10px] leading-relaxed text-(--crt-dim)">
+                THIS QUESTION IS MISSING PART OF ITS TEXT — AN ADMIN CAN COMPLETE
+                IT. NOTHING WAS RECORDED FOR THIS ATTEMPT.
+              </p>
+            </div>
+          ) : (
+            <>
+              <p className="crt-macro text-[clamp(1.6rem,5vw,2.4rem)] text-(--crt-ink)">
+                {result.isCorrect ? (
+                  <>TARGET HIT<span className="text-(--crt-red)">.</span></>
+                ) : (
+                  <span className="text-(--crt-red)">MISS — {view.type === "nat" ? "ANSWER" : view.type === "msq" ? "OPTIONS" : "OPTION"}: {answerSummary(view.type, result.correctAnswer)}</span>
+                )}
+              </p>
+              {result.solution ? (
+                <details className="border border-(--crt-line) bg-(--crt-bg)" open>
+                  <summary className="crt-micro cursor-pointer border-b border-(--crt-line) px-4 py-2.5 text-[11px] text-(--crt-ink) hover:text-(--crt-red)">
+                    [+] SOLUTION FILE
+                  </summary>
+                  <MathText
+                    text={result.solution}
+                    className="prose-study px-4 py-3 text-sm leading-7 text-(--crt-ink) [&_p]:my-2"
+                  />
+                </details>
+              ) : null}
+            </>
+          )}
         </section>
       ) : null}
     </div>

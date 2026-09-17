@@ -29,6 +29,48 @@
       "when": 1789209209454,
       "tag": "0003_damp_harry_osborn",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789224101063,
+      "tag": "0004_careless_black_panther",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789230955417,
+      "tag": "0005_dapper_tomas",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789235931205,
+      "tag": "0006_amusing_yellowjacket",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1789410968576,
+      "tag": "0007_username",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1789416384225,
+      "tag": "0008_moaning_prima",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789672415047,
+      "tag": "0009_password-auth",
+      "breakpoints": true
     }
   ]
 }

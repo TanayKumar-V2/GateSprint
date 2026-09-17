@@ -4,11 +4,11 @@ import { db } from "@/db";
 import {
   attempts,
   questions,
-  solutions,
   subjects,
   topics,
 } from "@/db/schema";
 import { formatQuestionBlock, formatTopicBlock } from "./blocks";
+import { readSolution } from "../solutions";
 
 /** Full PYQ context for Ask-Mentor sessions. Loaded server-side only. */
 export async function buildQuestionContext(
@@ -47,12 +47,7 @@ export async function buildQuestionContext(
     .limit(1);
   const latest = attemptRows[0] ?? null;
 
-  const solRows = await db
-    .select({ content: solutions.content })
-    .from(solutions)
-    .where(eq(solutions.questionId, questionId))
-    .orderBy(solutions.solutionType)
-    .limit(1);
+  const solution = await readSolution(questionId);
 
   return formatQuestionBlock({
     subjectName: q.subjectName,
@@ -67,7 +62,7 @@ export async function buildQuestionContext(
     selectedAnswer: latest?.selectedAnswer ?? null,
     wasCorrect: latest?.isCorrect ?? false,
     attempted: latest !== null,
-    solution: solRows[0]?.content ?? null,
+    solution,
   });
 }
 

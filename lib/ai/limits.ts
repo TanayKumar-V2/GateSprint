@@ -13,8 +13,8 @@ const num = (key: string, fallback: number): number => {
 
 export const CHAT_MAX_INPUT_CHARS = num("CHAT_MAX_INPUT_CHARS", 4000);
 export const CHAT_MAX_HISTORY_MESSAGES = num("CHAT_MAX_HISTORY_MESSAGES", 30);
-export const CHAT_MAX_OUTPUT_TOKENS = num("CHAT_MAX_OUTPUT_TOKENS", 1500);
-export const CHAT_TEMPERATURE = 0.6;
+export const CHAT_MAX_OUTPUT_TOKENS = num("CHAT_MAX_OUTPUT_TOKENS", 700);
+export const CHAT_TEMPERATURE = 0.2;
 export const CHAT_PROVIDER_TIMEOUT_MS = num("CHAT_PROVIDER_TIMEOUT_MS", 45000);
 export const CHAT_DAILY_BUDGET = num("CHAT_DAILY_BUDGET", 100);
 export const CHAT_MINUTE_LIMIT = num("CHAT_MINUTE_LIMIT", 10);

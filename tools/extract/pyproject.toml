@@ -1,0 +1,20 @@
+[project]
+name = "gate-mentor-extract"
+version = "0.1.0"
+description = "Fast deterministic GATE paper PDF extraction for GATE Mentor (PyMuPDF layout segmenter, no LLM)."
+requires-python = ">=3.10"
+dependencies = [
+  "pymupdf>=1.24",
+  "pillow>=10",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+# Real CDN uploads (tests inject a fake client instead).
+cdn = ["imagekitio>=4"]
+
+[tool.setuptools]
+py-modules = ["extract"]
+
+[tool.pytest.ini_options]
+testpaths = ["."]

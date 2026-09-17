@@ -14,6 +14,8 @@ import {
   pct,
   rankQuestions,
 } from "./recommend-rules";
+import { listImagesForQuestions } from "./imports/images";
+import { buildActivity } from "./progress-activity";
 
 export type TopicStats = {
   subjectSlug: string;
@@ -210,7 +212,7 @@ export async function getProgress(userId: string) {
     totalQuestions: questionRows.length,
   };
 
-  return { overall, subjects: subjectsOut, topics: topicsOut, weakTopics, topicById, subjectById };
+  return { overall, subjects: subjectsOut, topics: topicsOut, weakTopics, topicById, subjectById, activity: buildActivity(attemptRows) };
 }
 
 export type Recommendation = {
@@ -306,7 +308,8 @@ export async function getRecommendations(
   const weak = topicStats
     .filter((t) => t.weak)
     .filter((t) => {
-      const row = topicRows.find((x) => x.slug === t.topicSlug)!;
+    const subject = subjectRows.find((s) => s.slug === t.subjectSlug)!;
+    const row = topicRows.find((x) => x.slug === t.topicSlug && x.subjectId === subject.id)!;
       if (opts.subject && t.subjectSlug !== opts.subject) return false;
       if (opts.topic && t.topicSlug !== opts.topic) return false;
       return (byTopicId.get(row.id)?.length ?? 0) > 0;
@@ -395,6 +398,8 @@ export async function listBookmarks(userId: string) {
     )
     .orderBy(desc(bookmarks.createdAt));
 
+  const imageMap = await listImagesForQuestions(rows.map((r) => r.id));
+
   return rows.map((r) => ({
     id: r.id,
     year: r.year,
@@ -415,5 +420,6 @@ export async function listBookmarks(userId: string) {
     },
     attempted: false,
     bookmarked: true as const,
+    images: imageMap.get(r.id) ?? [],
   }));
 }

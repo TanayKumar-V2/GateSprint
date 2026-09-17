@@ -46,34 +46,55 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --color-chart-scale-pattern-color: var(--chart-scale-pattern-color);
+  --color-chart-scale-05: var(--chart-scale-05);
+  --color-chart-scale-04: var(--chart-scale-04);
+  --color-chart-scale-03: var(--chart-scale-03);
+  --color-chart-scale-02: var(--chart-scale-02);
+  --color-chart-scale-01: var(--chart-scale-01);
+  --color-chart-label: var(--chart-label);
+  --color-chart-marker-foreground: var(--chart-marker-foreground);
+  --color-chart-marker-border: var(--chart-marker-border);
+  --color-chart-marker-background: var(--chart-marker-background);
+  --color-chart-tooltip-muted: var(--chart-tooltip-muted);
+  --color-chart-tooltip-foreground: var(--chart-tooltip-foreground);
+  --color-chart-tooltip-background: var(--chart-tooltip-background);
+  --color-chart-brush-border: var(--chart-brush-border);
+  --color-chart-grid: var(--chart-grid);
+  --color-chart-crosshair: var(--chart-crosshair);
+  --color-chart-line-secondary: var(--chart-line-secondary);
+  --color-chart-line-primary: var(--chart-line-primary);
+  --color-chart-foreground-muted: var(--chart-foreground-muted);
+  --color-chart-foreground: var(--chart-foreground);
+  --color-chart-background: var(--chart-background);
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
+  --background: oklch(0.98 0.012 88);
+  --foreground: oklch(0.2 0.035 255);
+  --card: oklch(0.995 0.006 88);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
+  --primary: oklch(0.72 0.16 72);
+  --primary-foreground: oklch(0.2 0.035 255);
+  --secondary: oklch(0.94 0.025 88);
   --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
+  --muted: oklch(0.94 0.018 88);
+  --muted-foreground: oklch(0.47 0.035 255);
+  --accent: oklch(0.94 0.025 88);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: oklch(0.86 0.025 88);
+  --input: oklch(0.86 0.025 88);
+  --ring: oklch(0.72 0.16 72);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
+  --sidebar: oklch(0.965 0.015 88);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
   --sidebar-primary-foreground: oklch(0.985 0 0);
@@ -81,33 +102,54 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --chart-background: oklch(1 0 0);
+  --chart-foreground: oklch(0.145 0.004 285);
+  --chart-foreground-muted: oklch(0.55 0.014 260);
+  --chart-line-primary: var(--chart-1);
+  --chart-line-secondary: var(--chart-2);
+  --chart-crosshair: oklch(0.4 0.1828 274.34);
+  --chart-grid: oklch(0.9 0 0);
+  --chart-brush-border: var(--chart-grid);
+  --chart-tooltip-background: oklch(0.21 0.006 285 / 0.8);
+  --chart-tooltip-foreground: oklch(0.985 0 0);
+  --chart-tooltip-muted: oklch(0.65 0.01 260);
+  --chart-marker-background: oklch(0.97 0.005 260);
+  --chart-marker-border: oklch(0.85 0.01 260);
+  --chart-marker-foreground: oklch(0.3 0.01 260);
+  --chart-label: oklch(0.45 0.01 260);
+  --chart-scale-01: oklch(0.98 0.003 106);
+  --chart-scale-02: oklch(0.92 0.008 106);
+  --chart-scale-03: oklch(0.82 0.015 106);
+  --chart-scale-04: oklch(0.68 0.02 106);
+  --chart-scale-05: oklch(0.55 0.025 106);
+  --chart-scale-pattern-color: oklch(0.96 0.005 106);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --background: oklch(0.17 0.025 255);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
+  --card: oklch(0.215 0.028 255);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
+  --secondary: oklch(0.27 0.03 255);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
+  --muted: oklch(0.26 0.028 255);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --accent: oklch(0.27 0.03 255);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
+  --border: oklch(1 0 0 / 13%);
+  --input: oklch(1 0 0 / 16%);
   --ring: oklch(0.556 0 0);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
+  --sidebar: oklch(0.2 0.028 255);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: oklch(0.985 0 0);
@@ -115,6 +157,34 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --chart-background: oklch(0.145 0 0);
+  --chart-foreground: oklch(0.45 0 0);
+  --chart-foreground-muted: oklch(0.65 0.01 260);
+  --chart-crosshair: oklch(0.45 0 0);
+  --chart-grid: oklch(0.25 0 0);
+  --chart-brush-border: var(--chart-grid);
+  --chart-marker-background: oklch(0.25 0.01 260);
+  --chart-marker-border: oklch(0.4 0.01 260);
+  --chart-marker-foreground: oklch(0.9 0 0);
+  --chart-label: oklch(0.75 0.01 260);
+  --chart-scale-01: oklch(0.28 0.03 270);
+  --chart-scale-02: oklch(0.38 0.04 270);
+  --chart-scale-03: oklch(0.48 0.05 270);
+  --chart-scale-04: oklch(0.58 0.06 270);
+  --chart-scale-05: oklch(0.68 0.07 270);
+  --chart-scale-pattern-color: oklch(0.145 0 0);
+}
+
+.progress-charts {
+  --chart-background: var(--card);
+  --chart-foreground: var(--foreground);
+  --chart-foreground-muted: var(--muted-foreground);
+  --chart-label: var(--muted-foreground);
+  --chart-grid: var(--border);
+  --chart-crosshair: var(--muted-foreground);
+  --chart-tooltip-background: var(--popover);
+  --chart-tooltip-foreground: var(--popover-foreground);
+  --chart-tooltip-muted: var(--muted-foreground);
 }
 
 @layer base {
@@ -129,9 +199,7 @@
   }
 }
 
-/* GATE Mentor brand layer (Phase 1): calm study workspace.
-   Primary action = warm saffron/amber; info = teal/blue.
-   Correct/incorrect never rely on color alone (icons + text required). */
+/* GATE Mentor brand layer: graphite, paper, and one saffron action color. */
 :root {
   --brand-ink: oklch(0.22 0.04 260);
   --brand-saffron: oklch(0.72 0.16 72);
@@ -205,12 +273,12 @@
 /* ---------- Scroll reveals (IntersectionObserver adds .is-in) ---------- */
 .reveal {
   opacity: 0;
-  transform: translateY(28px);
-  filter: blur(6px);
+  transform: translateY(20px);
+  filter: blur(4px);
   transition:
-    opacity 0.9s var(--ease-spring),
-    transform 0.9s var(--ease-spring),
-    filter 0.9s var(--ease-spring);
+    opacity 0.6s var(--ease-spring),
+    transform 0.6s var(--ease-spring),
+    filter 0.6s var(--ease-spring);
   transition-delay: var(--reveal-delay, 0ms);
 }
 .reveal.is-in {
@@ -219,33 +287,69 @@
   filter: none;
 }
 
-/* ---------- Double-bezel: machined shell + inner core ---------- */
+/* ---------- Surfaces ---------- */
 .bezel {
-  padding: 6px;
-  border-radius: 1.75rem;
-  background: color-mix(in oklch, var(--foreground) 5%, transparent);
-  box-shadow:
-    inset 0 1px 1px rgb(255 255 255 / 0.08),
-    0 24px 60px -32px rgb(0 0 0 / 0.35);
+  padding: 1px;
+  border-radius: 1rem;
+  background: color-mix(in oklch, var(--foreground) 12%, transparent);
+  box-shadow: 0 16px 40px -28px rgb(32 42 63 / 0.45);
 }
 .bezel > [data-slot="card"] {
-  border-radius: calc(1.75rem - 6px);
+  border-radius: calc(1rem - 1px);
   height: 100%;
+}
+
+/* ---------- Double-bezel hero shells (machined hardware plates) ----------
+   Outer shell carries the hairline + ambient shadow; the inner core holds
+   its own surface with a concentric radius. Use rounded-[calc(2rem-0.5rem)]
+   on the inner core to keep the curves concentric. */
+.bezel-lg {
+  padding: 0.5rem;
+  border-radius: 2rem;
+  border: 1px solid color-mix(in oklch, var(--foreground) 10%, transparent);
+  background: color-mix(in oklch, var(--foreground) 4%, transparent);
+  box-shadow:
+    inset 0 1px 1px rgb(255 255 255 / 0.12),
+    0 24px 60px -32px rgb(32 42 63 / 0.35);
+}
+
+.surface-grid {
+  background: radial-gradient(circle at 82% 12%, color-mix(in oklch, var(--brand-saffron) 10%, transparent), transparent 28rem), var(--background);
+}
+
+.page-intro {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1.25rem;
+}
+
+.page-intro h1 {
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+}
+
+.mentor-prose {
+  max-width: 70ch;
+}
+
+.mentor-prose code {
+  overflow-wrap: anywhere;
 }
 
 /* ---------- Eyebrow tags ---------- */
 .eyebrow {
   display: inline-flex;
   align-items: center;
-  border-radius: 999px;
-  padding: 4px 12px;
+  border-radius: 6px;
+  padding: 4px 8px;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.2em;
   font-weight: 500;
   color: var(--muted-foreground);
-  background: color-mix(in oklch, var(--foreground) 6%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--foreground) 10%, transparent);
+  background: color-mix(in oklch, var(--brand-saffron) 22%, transparent);
+  color: var(--brand-saffron-foreground);
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--brand-saffron) 35%, transparent);
 }
 
 /* ---------- Ambient orbs (hero backgrounds, never on scrolling content) ---------- */
@@ -281,6 +385,271 @@
 }
 .dark .orbs::after {
   background: radial-gradient(circle, oklch(0.55 0.16 290 / 0.16), transparent 70%);
+}
+
+/* ---------- TACTICAL TELEMETRY / SWISS PRINT DUAL SUBSTRATE ---------- */
+/* One substrate at a time, never mixed. Dark = Tactical Telemetry CRT.
+   Light = Swiss Industrial Print newsprint. next-themes puts `dark` on
+   <html>; :root carries the light defaults (correct pre-hydration). */
+:root {
+  color-scheme: light;
+  --crt-bg: #f4f4f0;
+  --crt-panel: #eae8e3;
+  --crt-raised: #e3dfd4;
+  --crt-ink: #111111;
+  --crt-dim: #61605b;
+  --crt-line: #d3cfc4;
+  --crt-edge: #8f8b80;
+  --crt-red: #e61919;
+  --crt-ok: #0e7a30;
+  --crt-ghost: #dcd8cc;
+  --crt-glow: none;
+  --crt-scan: rgb(0 0 0 / 0.07);
+  --crt-dot: rgb(17 17 17 / 0.16);
+}
+.dark {
+  color-scheme: dark;
+  --crt-bg: #0a0a0a;
+  --crt-panel: #121212;
+  --crt-raised: #141414;
+  --crt-ink: #eaeaea;
+  --crt-dim: #8f8f8f;
+  --crt-line: #2b2b2b;
+  --crt-edge: #4a4a4a;
+  --crt-red: #ff2a2a;
+  --crt-ok: #4af626;
+  --crt-ghost: #1c1c1c;
+  --crt-glow: 0 0 12px rgb(234 234 234 / 0.22);
+  --crt-scan: rgb(0 0 0 / 0.28);
+  --crt-dot: rgb(234 234 234 / 0.22);
+}
+.crt-landing {
+  background: var(--crt-bg);
+  color: var(--crt-ink);
+}
+.crt-landing ::selection {
+  background: var(--crt-red);
+  color: var(--crt-bg);
+}
+.crt-macro {
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.045em;
+  line-height: 0.88;
+  text-wrap: balance;
+}
+.crt-micro {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  line-height: 1.35;
+}
+.crt-grid-lines {
+  display: grid;
+  gap: 1px;
+  background: var(--crt-line);
+  border: 1px solid var(--crt-line);
+}
+.crt-grid-lines > * {
+  background: var(--crt-bg);
+}
+.crt-scanlines {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    var(--crt-scan) 2px,
+    var(--crt-scan) 4px
+  );
+}
+.crt-noise::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.crt-halftone {
+  background-image: radial-gradient(var(--crt-dot) 1px, transparent 1.4px);
+  background-size: 7px 7px;
+}
+.crt-stripes {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--crt-red) 0 14px,
+    var(--crt-bg) 14px 28px
+  );
+}
+.crt-barcode {
+  background-image: repeating-linear-gradient(
+    90deg,
+    currentcolor 0 2px,
+    transparent 2px 5px,
+    currentcolor 5px 6px,
+    transparent 6px 11px,
+    currentcolor 11px 14px,
+    transparent 14px 18px
+  );
+}
+.crt-phosphor {
+  text-shadow: var(--crt-glow);
+}
+.crt-blink {
+  animation: crt-blink 1.1s steps(2, start) infinite;
+}
+@keyframes crt-blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+/* ---------- Shared workspace controls (square, mono, terminal) ---------- */
+.crt-tag {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--crt-line);
+  background: var(--crt-bg);
+  padding: 3px 8px;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  color: var(--crt-dim);
+  white-space: nowrap;
+}
+.crt-tag-solid {
+  background: var(--crt-ink);
+  border-color: var(--crt-ink);
+  color: var(--crt-bg);
+  font-weight: 700;
+}
+.crt-tag-red {
+  background: var(--crt-red);
+  border-color: var(--crt-red);
+  color: var(--crt-bg);
+  font-weight: 700;
+}
+.crt-label {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--crt-dim);
+  line-height: 1.4;
+}
+.crt-btn-red {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--crt-red);
+  border: 1px solid var(--crt-red);
+  color: var(--crt-bg);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 11px 22px;
+  cursor: pointer;
+}
+.crt-btn-red:hover {
+  background: var(--crt-ink);
+  border-color: var(--crt-ink);
+}
+.crt-btn-red:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.crt-btn-line {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid var(--crt-edge);
+  color: var(--crt-ink);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 11px 22px;
+  cursor: pointer;
+}
+.crt-btn-line:hover {
+  background: var(--crt-ink);
+  border-color: var(--crt-ink);
+  color: var(--crt-bg);
+}
+.crt-btn-line:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.crt-field {
+  width: 100%;
+  height: 44px;
+  background: var(--crt-bg);
+  border: 1px solid var(--crt-edge);
+  color: var(--crt-ink);
+  padding: 0 12px;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+.crt-field:focus {
+  outline: none;
+  border-color: var(--crt-red);
+}
+textarea.crt-field {
+  height: auto;
+  padding: 10px 12px;
+  line-height: 1.5;
+}
+.crt-field::placeholder {
+  color: var(--crt-dim);
+  opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+input[type="checkbox"].crt-check {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border: 1px solid var(--crt-edge);
+  background: var(--crt-bg);
+  cursor: pointer;
+  position: relative;
+}
+input[type="checkbox"].crt-check:checked {
+  background: var(--crt-red);
+  border-color: var(--crt-red);
+}
+input[type="checkbox"].crt-check:checked::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid var(--crt-bg);
+  border-width: 0 2px 2px 0;
+  transform: rotate(42deg);
+}
+
+/* ---------- Landing marquee (linear constant motion) ---------- */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-marquee {
+  animation: marquee 36s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -5,6 +5,7 @@ import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/db";
 import { accounts, sessions, users, verificationTokens } from "@/db/schema";
 import { logAuthEvent } from "./security/auth-events";
+import { ensureUsername } from "./profile";
 
 /** True when Google sign-in can actually work (no hard-coded fallbacks). */
 export function isSignInConfigured(): boolean {
@@ -35,17 +36,36 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // the last Google account.
       authorization: { params: { prompt: "select_account" } },
     }),
+    // NOTE: no Credentials provider on purpose. This Auth.js version only
+    // mints JWT sessions for credentials logins and never persists them
+    // to the database strategy this app requires (instant revocation).
+    // Email+password auth instead verifies via lib/password and opens a
+    // real database session in components/auth/sign-in-actions.ts.
   ],
   callbacks: {
     session({ session, user }) {
       // Expose the stable user id to server components and route handlers.
       // Ownership checks must use this, never anything from the client.
       session.user.id = user.id;
+      // Profile handle for the dashboard nav. Null only for rows created
+      // before handles existed and missed the backfill — callers fall back
+      // to ensureUsername so the link never dead-ends.
+      session.user.username = (user as { username?: string | null }).username ?? null;
       return session;
     },
   },
   events: {
-    async signIn({ user, account }) {
+    async createUser({ user }) {
+      // Every account needs a stable profile handle from day one.
+      // Failures must never block sign-up — rerun
+      // db/backfill-usernames.ts to assign handles to any rows missed.
+      // ensureUsername is idempotent, so replays are safe.
+      try {
+        if (user?.id) await ensureUsername(user.id, user.name ?? null, user.email ?? null);
+      } catch {
+        // Backfilled lazily; see getProfileByUsername callers.
+      }
+    },    async signIn({ user, account }) {
       // Privacy: provider + success only. No emails, tokens, or profiles.
       logAuthEvent({
         type: "sign-in",
