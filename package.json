@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/router.test.ts tests/answers.test.ts tests/rules.test.ts tests/blocks.test.ts tests/math.test.ts tests/imports.test.ts tests/images.test.ts tests/grading.test.ts tests/username.test.ts tests/solver-render.test.tsx",
+    "test": "tsx --test tests/router.test.ts tests/answers.test.ts tests/rules.test.ts tests/blocks.test.ts tests/math.test.ts tests/imports.test.ts tests/images.test.ts tests/grading.test.ts tests/username.test.ts tests/solver-render.test.tsx tests/extraction.test.ts tests/classify.test.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx db/migrate.ts",
     "db:seed": "tsx db/seed.ts",

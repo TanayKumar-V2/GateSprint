@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { MAX_IMAGES_PER_QUESTION, splitValidImages } from "../lib/imports/image-validation";
-import { figureUrl } from "../components/questions/question-figures";
+import { FIGURE_PLACEHOLDER_TEXT, MAX_IMAGES_PER_QUESTION, splitValidImages, wantsFigures } from "../lib/imports/image-validation";
+import { FIGURE_PLACEHOLDER, figureUrl } from "../components/questions/question-figures";
 
 // 1x1 transparent PNG.
 const tinyPng = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
@@ -65,5 +65,18 @@ describe("splitValidImages", () => {
 describe("figureUrl", () => {
   it("points at the image serving route", () => {
     assert.equal(figureUrl("q1", "img9"), "/api/questions/q1/images/img9");
+  });
+});
+
+describe("wantsFigures", () => {
+  it("matches the UI placeholder literal exactly", () => {
+    assert.equal(FIGURE_PLACEHOLDER_TEXT, FIGURE_PLACEHOLDER);
+  });
+  it("detects options pointing at missing diagrams", () => {
+    assert.equal(wantsFigures([{ id: "A", text: "[See figure]" }]), true);
+    assert.equal(wantsFigures([{ id: "A", text: "  [See figure]  " }]), true);
+    assert.equal(wantsFigures([{ id: "A", text: "42" }]), false);
+    assert.equal(wantsFigures(null), false);
+    assert.equal(wantsFigures(undefined), false);
   });
 });

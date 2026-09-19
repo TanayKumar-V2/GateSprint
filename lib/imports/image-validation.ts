@@ -3,9 +3,24 @@ import { z } from "zod";
 /* Pure figure validation (no database, no I/O) — unit-tested in
  * tests/images.test.ts. Database persistence lives in ./images. */
 
-export const MAX_IMAGES_PER_QUESTION = 6;
+export const MAX_IMAGES_PER_QUESTION = 8;
 export const MAX_IMAGE_BYTES = 512 * 1024;
 export const ALLOWED_IMAGE_MIME = ["image/png", "image/jpeg"] as const;
+
+/* Marker the extractor writes for image-only options. Mirrors
+ * FIGURE_PLACEHOLDER in components/questions/question-figures.tsx (kept as
+ * a separate literal so no zod import leaks into the client bundle; a test
+ * pins the two together). */
+export const FIGURE_PLACEHOLDER_TEXT = "[See figure]";
+
+/** True when at least one option points at a diagram. */
+export function wantsFigures(
+  options: { id: string; text: string }[] | null | undefined,
+): boolean {
+  return (options ?? []).some(
+    (option) => option.text.trim() === FIGURE_PLACEHOLDER_TEXT,
+  );
+}
 
 const imageRecord = z
   .object({

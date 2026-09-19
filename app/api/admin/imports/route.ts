@@ -14,12 +14,19 @@ import {
   normalizeConfidence,
   normalizeDifficulty,
   normalizeOptions,
+  normalizePenalty,
+  isQuarantined,
   normalizeQuestionNumber,
   normalizeType,
   toNumber,
 } from "@/lib/imports/normalize";
 import { badRequest, forbidden, unauthorized } from "@/lib/api/respond";
-import { splitValidImages, saveQuestionImages } from "@/lib/imports/images";
+import {
+  classifyUnmappedItems,
+  toClassifyInput,
+  type ClassificationAssignment,
+} from "@/lib/imports/classify";
+import { splitValidImages, saveQuestionImages, wantsFigures } from "@/lib/imports/images";
 import { isAllowedOrigin } from "@/lib/security/origin";
 
 const option = z.object({ id: z.string().regex(/^[A-Z]$/), text: z.string().trim().min(1).max(1000) });
@@ -42,7 +49,7 @@ const validAnswer = z.union([
   z.object({ kind: z.literal("nat"), value: z.number().finite(), tolerance: z.number().min(0).finite() }),
 ]);
 const importedQuestion = z.object({
-  externalId: z.string().trim().min(1).max(200), year: requiredNumber(z.number().int().min(1990).max(2100)), questionNumber: z.preprocess((value) => normalizeQuestionNumber(value) ?? null, z.number().int().positive().nullable()), subject: z.string().trim().min(1), topic: z.string().trim().min(1), type: z.preprocess(normalizeType, z.enum(["mcq", "msq", "nat"])), difficulty: z.preprocess((value) => (value === null || value === "" ? "medium" : normalizeDifficulty(value)), z.enum(["easy", "medium", "hard"])), prompt: z.string().trim().min(1).max(12000), options: z.preprocess((value) => normalizeOptions(value) ?? null, z.array(option).nullable()), correctAnswer: z.unknown(), marks: requiredNumber(z.number().positive().max(20)).default(1), negativeMarks: requiredNumber(z.number().min(0).max(20)).default(0), solution: z.preprocess((value) => (typeof value === "string" ? value : value == null ? undefined : String(value)), z.string().trim().optional()),     sourceLabel: z.string().trim().max(200).optional(), sourcePage: z.preprocess((value) => normalizeQuestionNumber(value) ?? null, z.number().int().positive().nullable()), images: z.unknown().optional(),     confidence: z.preprocess((value) => {
+  externalId: z.string().trim().min(1).max(200), year: requiredNumber(z.number().int().min(1990).max(2100)), questionNumber: z.preprocess((value) => normalizeQuestionNumber(value) ?? null, z.number().int().positive().nullable()), subject: z.string().trim().min(1), topic: z.string().trim().min(1), type: z.preprocess(normalizeType, z.enum(["mcq", "msq", "nat"])), difficulty: z.preprocess((value) => (value === null || value === "" ? "medium" : normalizeDifficulty(value)), z.enum(["easy", "medium", "hard"])), prompt: z.string().trim().min(1).max(12000), options: z.preprocess((value) => normalizeOptions(value) ?? null, z.array(option).nullable()), correctAnswer: z.unknown(),   marks: requiredNumber(z.number().positive().max(20)).default(1), negativeMarks: z.preprocess(normalizePenalty, z.number().min(0).max(20)).default(0), solution: z.preprocess((value) => (typeof value === "string" ? value : value == null ? undefined : String(value)), z.string().trim().optional()),     sourceLabel: z.string().trim().max(200).optional(), sourcePage: z.preprocess((value) => normalizeQuestionNumber(value) ?? null, z.number().int().positive().nullable()), images: z.unknown().optional(),     confidence: z.preprocess((value) => {
       // Confidence must never sink an import — clamp into range, junk becomes unknown.
       const resolved = normalizeConfidence(value) ?? null;
       return typeof resolved === "number" && Number.isFinite(resolved) ? Math.min(1, Math.max(0, resolved)) : resolved;
@@ -50,10 +57,11 @@ const importedQuestion = z.object({
 });
 const batch = z.object({ questions: z.array(z.unknown()).min(1).max(500) });
 
-// Holding area for questions whose subject/topic is not in the taxonomy yet.
-// Created lazily on first use so clean imports never touch the taxonomy.
-// Everything parked here stays unpublished with confidence 0 until an admin
-// reassigns it — nothing silently lands in the wrong subject.
+// Holding area for questions whose subject/topic is not in the taxonomy yet
+// AND the AI repair pass below could not place them either. Created lazily
+// on first use so clean imports never touch the taxonomy. Everything parked
+// here stays published with confidence 0 — nothing silently lands in the
+// wrong subject.
 const QUARANTINE_SUBJECT = { slug: "uncategorized", name: "Uncategorized" };
 const QUARANTINE_TOPIC = { slug: "needs-review", name: "Needs Review" };
 
@@ -132,6 +140,42 @@ export async function POST(request: Request) {
   const skipped: { externalId: string; reason: string }[] = [];
   const warnings: { externalId: string; reason: string }[] = [];
   let figureCount = 0;
+  let autoClassifiedCount = 0;
+  // Repair pre-pass: rows whose subject/topic miss the taxonomy (the Python
+  // extractor's "Uncategorized / Needs Review" defaults always miss) get one
+  // batched model call to place them. Assignments are re-validated through
+  // the same matchers in the main loop, so the model can only pick real
+  // taxonomy entries. Any failure here leaves the map empty and every such
+  // row quarantines exactly as before — classification never sinks an import.
+  let repaired = new Map<string, ClassificationAssignment>();
+  {
+    const candidates = new Map<string, { prompt: string; options: { id: string; text: string }[] | null }>();
+    for (const rawItem of parsed.data.questions) {
+      const preparsed = importedQuestion.safeParse(rawItem);
+      if (!preparsed.success) continue;
+      const candidate = preparsed.data;
+      if (candidates.has(candidate.externalId) || seen.has(candidate.externalId)) continue;
+      const matchedSubject = matchSubject(subjects, candidate.subject);
+      const matchedTopic = matchedSubject ? matchTopic(topics, matchedSubject.id, candidate.topic) : null;
+      // A match into the holding bucket is not a placement — it still
+      // needs the repair pass (otherwise "Uncategorized" rows would match
+      // the bucket itself and skip classification forever).
+      if (isQuarantined(matchedSubject, matchedTopic)) {
+        candidates.set(candidate.externalId, { prompt: candidate.prompt, options: candidate.options });
+      }
+    }
+    if (candidates.size > 0 && (process.env.GROQ_API_KEY ?? "").trim()) {
+      try {
+        repaired = await classifyUnmappedItems(
+          [...candidates].map(([externalId, row]) => toClassifyInput(externalId, row.prompt, row.options)),
+          subjects,
+          topics,
+        );
+      } catch {
+        repaired = new Map<string, ClassificationAssignment>();
+      }
+    }
+  }
   for (const rawItem of parsed.data.questions) {
     const itemParsed = importedQuestion.safeParse(rawItem);
     const rawExternalId = rawItem && typeof rawItem === "object" && "externalId" in rawItem && typeof rawItem.externalId === "string" ? rawItem.externalId : "unknown-question";
@@ -146,17 +190,30 @@ export async function POST(request: Request) {
     if (seenPrompts.has(promptKey)) { skipped.push({ externalId: item.externalId, reason: "Same question text already in the bank." }); continue; }
     const subject = matchSubject(subjects, item.subject);
     const topic = subject ? matchTopic(topics, subject.id, item.topic) : null;
-    // Unknown taxonomy parks the question in the quarantine bucket instead of
-    // skipping it. It still publishes immediately with confidence 0 — reassign
-    // it from the question bank when you get a chance.
+    // Unknown taxonomy first tries the AI repair map (validated through the
+    // same matchers — the model can only pick real entries), and only parks
+    // the question in the quarantine bucket when repair misses too. Repaired
+    // rows keep their extractor confidence; quarantined rows publish with 0.
     let subjectId = subject?.id;
     let topicId = topic?.id;
     let quarantined = false;
-    if (!subjectId || !topicId) {
-      const bucket = await quarantineBucket();
-      subjectId = bucket.subject.id;
-      topicId = bucket.topic.id;
-      quarantined = true;
+    // Same rule as the pre-pass: landing in the holding bucket counts as
+    // unplaced and gets one repair attempt before parking for real.
+    if (!subjectId || !topicId || isQuarantined(subject ?? null, topic ?? null)) {
+      const assignment = repaired.get(item.externalId);
+      const repairedSubject = assignment?.subject ? matchSubject(subjects, assignment.subject) : null;
+      const repairedTopic =
+        repairedSubject && assignment?.topic ? matchTopic(topics, repairedSubject.id, assignment.topic) : null;
+      if (repairedSubject && repairedTopic) {
+        subjectId = repairedSubject.id;
+        topicId = repairedTopic.id;
+        autoClassifiedCount += 1;
+      } else {
+        const bucket = await quarantineBucket();
+        subjectId = bucket.subject.id;
+        topicId = bucket.topic.id;
+        quarantined = true;
+      }
     }
     if (item.type === "nat" && item.options !== null) { skipped.push({ externalId: item.externalId, reason: "NAT questions cannot have options." }); continue; }
     if (item.type !== "nat" && (!item.options || item.options.length < 2)) { skipped.push({ externalId: item.externalId, reason: "MCQ and MSQ questions need at least two options with A-D ids." }); continue; }
@@ -177,6 +234,10 @@ export async function POST(request: Request) {
     seen.add(item.externalId); seenPrompts.add(promptKey); imported.push(item.externalId);
     if (quarantined) warnings.push({ externalId: item.externalId, reason: `Subject/topic ${JSON.stringify(item.subject)?.slice(0, 60)} / ${JSON.stringify(item.topic)?.slice(0, 60)} is not in the taxonomy — published under Uncategorized / Needs Review. Reassign when you get a chance.` });
     if (invalidImages > 0) warnings.push({ externalId: item.externalId, reason: `${invalidImages} figure(s) were dropped (unsupported format or over 512 KB). The question itself was still imported.` });
+    // Options pointing at diagrams that never arrived would render as bare
+    // FIGURE tags with a DIAGRAMS MISSING notice — flag the row now, while
+    // the source PDF is still at hand, instead of failing silently.
+    if (wantsFigures(item.options) && savedImages.length === 0) warnings.push({ externalId: item.externalId, reason: "Options say [See figure] but no usable diagrams arrived with this import. Re-extract the PDF with figures enabled, or the FIGURE tags will render with nothing below." });
   }
-  return NextResponse.json({ imported, skipped, warnings, importedCount: imported.length, skippedCount: skipped.length, needsReviewCount: warnings.length, figureCount }, { status: 201 });
+  return NextResponse.json({ imported, skipped, warnings, importedCount: imported.length, skippedCount: skipped.length, needsReviewCount: warnings.length, autoClassifiedCount, figureCount }, { status: 201 });
 }

@@ -4,17 +4,18 @@ import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 type SkipEntry = { externalId: string; reason: string };
-type ImportResponse = { importedCount?: number; skippedCount?: number; needsReviewCount?: number; figureCount?: number; skipped?: SkipEntry[]; warnings?: SkipEntry[]; error?: { message?: string } };
+type ImportResponse = { importedCount?: number; skippedCount?: number; needsReviewCount?: number; autoClassifiedCount?: number; figureCount?: number; skipped?: SkipEntry[]; warnings?: SkipEntry[]; error?: { message?: string } };
 
 function summarize(data: ImportResponse, extractedCount: number | null): string {
   const needsReview = data.needsReviewCount ?? (data.warnings ?? []).length;
   const reviewNote = needsReview > 0 ? " " + needsReview + " question(s) need attention — see details below." : "";
+  const classifiedNote = (data.autoClassifiedCount ?? 0) > 0 ? " " + data.autoClassifiedCount + " auto-classified into subjects by AI." : "";
   const figureNote = (data.figureCount ?? 0) > 0 ? " " + data.figureCount + " figure(s) saved with the questions." : "";
   const head = extractedCount === null
     ? "Published " + (data.importedCount ?? 0) + " questions and skipped " + (data.skippedCount ?? 0) + "."
     : "Extracted " + extractedCount + " questions. Published " + (data.importedCount ?? 0) + " questions and skipped " + (data.skippedCount ?? 0) + ".";
   const tail = (data.skippedCount ?? 0) === 0 && needsReview === 0 ? " They are live in Practice now." : "";
-  return head + reviewNote + figureNote + tail;
+  return head + reviewNote + classifiedNote + figureNote + tail;
 }
 
 export function ImportPanel() {
@@ -29,10 +30,13 @@ export function ImportPanel() {
   const [busy, setBusy] = useState(false);
   const [jsonBusy, setJsonBusy] = useState(false);
 
-  function report(data: ImportResponse, extractedCount: number | null, engineNote?: string) {
+  function report(data: ImportResponse, extractedCount: number | null, engineNote?: string, engine?: string) {
     setSkipped(data.skipped ?? []);
     setWarnings(data.warnings ?? []);
-    setNotice(summarize(data, extractedCount) + (engineNote ? " " + engineNote : ""));
+    // The engine is always shown: silent AI-fallback losses (like the 2024
+    // paper's 37/65) must be diagnosable from this notice alone.
+    const enginePrefix = engine ? "Engine: " + engine.toUpperCase() + ". " : "";
+    setNotice(enginePrefix + summarize(data, extractedCount) + (engineNote ? " " + engineNote : ""));
   }
 
   async function postQuestions(questions: unknown[]) {
@@ -62,7 +66,7 @@ export function ImportPanel() {
       }
       setExtraction(extracted.questions);
       const data = await postQuestions(extracted.questions);
-      if (data) report(data, extracted.questions.length, extracted.engineNote);
+      if (data) report(data, extracted.questions.length, extracted.engineNote, extracted.engine);
     } catch {
       setNotice("The upload failed. Check that the PDF is readable and try again.");
     } finally {

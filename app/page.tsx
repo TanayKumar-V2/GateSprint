@@ -6,6 +6,7 @@ import { FeatureAccordion } from "@/components/landing/feature-accordion";
 import { ScrubReveal } from "@/components/landing/scrub-reveal";
 import { ScaleGallery } from "@/components/landing/scale-gallery";
 import { SignInDialog } from "@/components/auth/sign-in-dialog";
+import { FooterColophon, FooterLinkGroups } from "@/components/site-footer";
 import { currentUserId } from "@/lib/current-user";
 import { isSignInConfigured } from "@/lib/auth";
 
@@ -298,16 +299,26 @@ export default async function Home() {
           </div>
         </div>
         <footer className="relative mt-16 border-t-2 border-(--crt-ink)">
+          <FooterLinkGroups />
           <div className="grid gap-px bg-(--crt-line) md:grid-cols-[1fr_auto_1fr]">
             <p className="crt-micro bg-(--crt-bg) px-4 py-4 text-[11px] text-(--crt-ink) sm:px-8">
               GATE-MENTOR® {"///"} <span className="text-(--crt-dim)">FIELD MANUAL REV 2.6</span>
             </p>
-            <nav aria-label="Footer" className="crt-micro flex bg-(--crt-bg) text-[11px]">
+            <nav aria-label="Footer" className="crt-micro flex flex-wrap bg-(--crt-bg) text-[11px]">
               <Link href="/practice" className="border-x border-(--crt-line) px-5 py-4 transition-colors hover:bg-(--crt-ink) hover:text-(--crt-bg)">
                 PRACTICE
               </Link>
               <Link href="/mentor" className="border-r border-(--crt-line) px-5 py-4 transition-colors hover:bg-(--crt-ink) hover:text-(--crt-bg)">
                 MENTOR
+              </Link>
+              <Link href="/about" className="border-r border-(--crt-line) px-5 py-4 transition-colors hover:bg-(--crt-ink) hover:text-(--crt-bg)">
+                ABOUT
+              </Link>
+              <Link href="/contact" className="border-r border-(--crt-line) px-5 py-4 transition-colors hover:bg-(--crt-ink) hover:text-(--crt-bg)">
+                CONTACT
+              </Link>
+              <Link href="/privacy" className="border-r border-(--crt-line) px-5 py-4 transition-colors hover:bg-(--crt-ink) hover:text-(--crt-bg)">
+                PRIVACY
               </Link>
               <SignInDialog
                 configured={configured}
@@ -316,10 +327,7 @@ export default async function Home() {
                 SIGN-IN
               </SignInDialog>
             </nav>
-            <div className="flex items-center gap-4 bg-(--crt-bg) px-4 py-4 sm:px-8">
-              <span aria-hidden="true" className="crt-barcode h-6 flex-1 text-(--crt-ink)" />
-              <span className="crt-micro text-[10px] text-(--crt-dim)">©2026 {"///"} END</span>
-            </div>
+            <FooterColophon className="border-t border-(--crt-line) md:col-span-3" />
           </div>
         </footer>
       </section>

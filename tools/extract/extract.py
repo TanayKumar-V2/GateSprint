@@ -74,8 +74,10 @@ SECTION_RESET_RE = re.compile(
 )
 
 # Printer footers that leak past boilerplate detection (position varies).
+# A bare "CS" is the running-foot remnant of the "GATE <year> Computer
+# Science ..." footer row — never question content on its own line.
 FOOTER_RE = re.compile(
-    r"^\s*(?:Page\s+\d+\s+of\s+\d+|Organi[sz]ing\s+Institute\s*:.*)\s*$",
+    r"^\s*(?:Page\s+\d+\s+of\s+\d+|Organi[sz]ing\s+Institute\s*:.*|CS)\s*$",
     re.IGNORECASE,
 )
 
@@ -87,6 +89,12 @@ FALSE_POSITIVE_STARTERS = re.compile(
     re.IGNORECASE,
 )
 
+# Prompt-tail lines that must never be reclaimed as option text (they are
+# stem prose, not a shifted first option).
+_STEM_TAIL_RE = re.compile(
+    r"(\?|:|following|below|above|table|figure|options?|correct|true|marks?)\s*$",
+    re.IGNORECASE,
+)
 # Table rows: header with ranges ("0 - 2  2 - 4") or data rows with numbers.
 _TABLE_HEADER_RE = re.compile(
     r"^([A-Za-z(`][A-Za-z\s()`,%.]*?)\s+((?:\d+(?:\.\d+)?\s*-\s*\d+(?:\.\d+)?\s*){2,})"
@@ -403,11 +411,28 @@ def _vector_figures(
             continue  # specks
         rects.append(rect)
     page_area = page.rect.width * page.rect.height
+    try:
+        page_words = page.get_text("words")
+    except ValueError:
+        page_words = []
     for cluster in _cluster_rects(rects)[:max_clusters]:
         if cluster.width < min_pt or cluster.height < min_pt:
             continue
         if cluster.width * cluster.height > 0.6 * page_area:
             continue  # background panel
+        if (cluster.width * cluster.height) / page_area > 0.15:
+            # Page-text render, not a diagram: a real figure this large
+            # carries a few labels, not paragraphs. Count words with at
+            # least two characters whose center falls inside the cluster.
+            inside = sum(
+                1
+                for word in page_words
+                if len(word[4]) >= 2
+                and cluster.x0 <= (word[0] + word[2]) / 2 <= cluster.x1
+                and cluster.y0 <= (word[1] + word[3]) / 2 <= cluster.y1
+            )
+            if inside >= 12:
+                continue
         box = (cluster.x0, cluster.y0, cluster.x1, cluster.y1)
         if any(_iou(box, other) > 0.25 for other in raster_bboxes):
             continue  # already captured as an embedded raster image
@@ -594,8 +619,12 @@ def _build_question(
     def resolve_options() -> list[dict[str, str]]:
         """Join option lines; fix marker-after-text layouts; fill image options."""
         texts = [" ".join(option["lines"]).strip() for option in options]
-        index = len(texts) - 1
-        while index > 0 and not texts[index] and options[index - 1]["lines"]:
+        # Pull-back cascade: in "text (A) text (B) ..." grids each option
+        # holds its SUCCESSOR's text. Walk from the end so interior gaps
+        # (empty middle options) recover too — not just a trailing one.
+        for index in range(len(texts) - 1, 0, -1):
+            if texts[index] or not options[index - 1]["lines"]:
+                continue
             # Marker-after-text grid ("...text... (D)"): the text landed on
             # the previous option; pull its last line back, cascading left.
             # Single-line steals need a short line so spilled stem prose
@@ -604,9 +633,16 @@ def _build_question(
             if len(prev) >= 2 or (len(prev) == 1 and len(prev[0]) < 80):
                 texts[index] = prev.pop()
                 texts[index - 1] = " ".join(prev).strip()
-                index -= 1
-            else:
-                break
+        # Text-before-marker option grids ("textA (A) textB (B) ..."): every
+        # option stole its predecessor's text, so the first option's text is
+        # still sitting as the prompt's last line. Reclaim it — unless that
+        # line looks like stem prose (mixed image/text options), in which
+        # case leave the placeholder so the import flags the row.
+        if len(texts) > 1 and not texts[0] and all(texts[1:]):
+            tail = prompt_lines[-1].strip() if prompt_lines else ""
+            if tail and not _STEM_TAIL_RE.search(tail):
+                texts[0] = tail
+                del prompt_lines[-1]
         resolved: list[dict[str, str]] = []
         for position, option in enumerate(options):
             text = texts[position]
@@ -719,7 +755,7 @@ def extract_pdf_bytes(
     year: int | None,
     subject: str,
     topic: str,
-    max_images: int = 4,
+    max_images: int = 8,
     min_image: int = 80,
     max_dim: int = 1200,
     upload_cdn: bool = False,
@@ -746,6 +782,9 @@ def extract_pdf_bytes(
         last_number: int | None = None
         restart_allowed = False
         finished = False
+        # (page, y, col) of the last line appended to the current segment —
+        # lets a new Q-marker reclaim a same-row stem line sorted above it.
+        prev_append: tuple[int, float, int] | None = None
 
         for page_no, (page, lines) in enumerate(zip(doc, pages_lines), start=1):
             if finished:
@@ -787,6 +826,27 @@ def extract_pdf_bytes(
                     counter += 1
                     last_number = number
                     restart_allowed = False
+                    # Same-row marginal-label inversion: a stem line sorted a
+                    # hair above its Q-marker (same page/column, <1.5pt) belongs
+                    # to the NEW question, not the previous segment's tail.
+                    # Genuine spill sits a full line or more above and is kept.
+                    orphan: str | None = None
+                    if (
+                        current is not None
+                        and prev_append is not None
+                        and prev_append[0] == page_no
+                        and prev_append[2] == col
+                        and 0 < _y - prev_append[1] < 1.5
+                        and current.lines
+                    ):
+                        tail = current.lines[-1]
+                        if (
+                            tail.strip()
+                            and not OPTION_RE.match(tail)
+                            and not QUESTION_RE.match(tail)
+                            and not tail.lstrip().startswith("|")
+                        ):
+                            orphan = current.lines.pop()  # type: ignore[union-attr]
                     current = Segment(
                         index=counter,
                         number=number,
@@ -796,16 +856,21 @@ def extract_pdf_bytes(
                         col=col,
                     )
                     segments.append(current)
+                    if orphan is not None:
+                        current.lines.append(orphan)  # type: ignore[union-attr]
                     rest = QUESTION_RE.sub("", line).strip()
                     if not rest:
                         bare = BARE_Q_RE.match(line.strip())
                         rest = ((bare.group(2) if bare else "") or "").strip()
                     if rest:
                         current.lines.append(rest)  # type: ignore[union-attr]
+                    prev_append = (page_no, _y, col) if (orphan is not None or rest) else None
                     continue
                 if current is None:
+                    prev_append = None
                     continue  # preamble before the first question
                 current.lines.append(line)  # type: ignore[union-attr]
+                prev_append = (page_no, _y, col)
 
             # Assign this page's figures to the question spanning their position.
             page_mid = page.rect.width / 2
@@ -859,7 +924,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--topic", default="Needs Review", help="Topic for every row (default parks rows for review).")
     parser.add_argument("--source-label", default=None, help="Defaults to the PDF filename stem.")
     parser.add_argument("-o", "--out", default=None, help="Write JSON here instead of stdout.")
-    parser.add_argument("--max-images", type=int, default=4, help="Max figures kept per question.")
+    parser.add_argument("--max-images", type=int, default=8, help="Max figures kept per question.")
     parser.add_argument("--min-image", type=int, default=80, help="Min figure width/height in px.")
     parser.add_argument("--max-dim", type=int, default=1200, help="Figures larger than this (px) are thumbnailed to bound payloads; 0 disables.")
     parser.add_argument("--upload-cdn", action="store_true", help="Upload figures to ImageKit CDN (needs IMAGEKIT_* env vars); JSON then carries urls instead of base64.")

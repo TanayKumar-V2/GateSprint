@@ -94,6 +94,26 @@ export default async function DashboardLayout({
         {children}
       </main>
       <footer className="border-t-2 border-(--crt-ink)">
+        <nav
+          aria-label="Footer"
+          className="crt-micro mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-5 gap-y-1 px-4 pt-3 text-[10px] sm:px-6"
+        >
+          <Link href="/about" className="text-(--crt-dim) transition-colors hover:text-(--crt-ink)">
+            ABOUT US
+          </Link>
+          <Link href="/contact" className="text-(--crt-dim) transition-colors hover:text-(--crt-ink)">
+            CONTACT US
+          </Link>
+          <Link href="/privacy" className="text-(--crt-dim) transition-colors hover:text-(--crt-ink)">
+            PRIVACY POLICY
+          </Link>
+          <Link href="/cookies" className="text-(--crt-dim) transition-colors hover:text-(--crt-ink)">
+            COOKIE POLICY
+          </Link>
+          <Link href="/terms" className="text-(--crt-dim) transition-colors hover:text-(--crt-ink)">
+            TERMS
+          </Link>
+        </nav>
         <div className="mx-auto flex w-full max-w-6xl items-center gap-4 px-4 py-3 sm:px-6">
           <span className="crt-micro text-[10px] text-(--crt-dim)">
             GATE-MENTOR® {"///"} FIELD MANUAL REV 2.6

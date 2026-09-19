@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { questionImages } from "@/db/schema";
 import type { ValidImage } from "./image-validation";
 
-export { MAX_IMAGES_PER_QUESTION, MAX_IMAGE_BYTES, ALLOWED_IMAGE_MIME, splitValidImages } from "./image-validation";
+export { MAX_IMAGES_PER_QUESTION, MAX_IMAGE_BYTES, ALLOWED_IMAGE_MIME, FIGURE_PLACEHOLDER_TEXT, splitValidImages, wantsFigures } from "./image-validation";
 export type { ValidImage } from "./image-validation";
 
 export function imageUrl(questionId: string, imageId: string): string {

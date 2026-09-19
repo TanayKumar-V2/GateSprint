@@ -573,3 +573,168 @@ def test_cs1_original_q53_definition_rows_and_full_paper():
         text = item["prompt"] + " ".join(o["text"] for o in item["options"] or [])
         assert not re.search(r"Organi[sz]ing Institute|Page \d+ of \d+", text)
 
+
+def _page_render_pdf() -> bytes:
+    """Big vector field over paragraph text: a page render, not a diagram."""
+    doc = fitz.open()
+    page = doc.new_page()
+    page.insert_text((72, 80), "Q.1 Pick one?", fontsize=11)
+    for row in range(14):
+        page.insert_text((72, 110 + row * 16), "alpha beta gamma delta epsilon", fontsize=11)
+    page.insert_text((90, 350), "(A) yes", fontsize=11)
+    page.insert_text((90, 370), "(B) no", fontsize=11)
+    shape = page.new_shape()
+    for row in range(14):
+        for col in range(9):
+            shape.draw_rect(fitz.Rect(70 + col * 44, 108 + row * 16 - 11, 105 + col * 44, 108 + row * 16 + 1))
+    shape.finish(width=1)
+    shape.commit()
+    page.insert_text((72, 460), "Q.2 Done?", fontsize=11)
+    page.insert_text((90, 490), "(A) ok", fontsize=11)
+    page.insert_text((90, 510), "(B) fine", fontsize=11)
+    out = io.BytesIO()
+    doc.save(out)
+    doc.close()
+    return out.getvalue()
+
+
+def test_vector_page_render_skipped():
+    first, _ = extract_pdf_bytes(
+        _page_render_pdf(), stem="RENDER", year=2024, subject="s", topic="t",
+    )["questions"]
+    assert [o["text"] for o in first["options"]] == ["yes", "no"]
+    assert first["images"] == []
+
+
+def _grid_options_pdf() -> bytes:
+    """Option text on the line BEFORE its bare marker (two-column grids)."""
+    doc = fitz.open()
+    page = doc.new_page()
+    rows = [
+        (72, 80, "Q.1 Which is even?"),
+        (250, 110, "2"), (72, 112, "(A)"),
+        (250, 140, "4"), (72, 142, "(B)"),
+        (250, 170, "6"), (72, 172, "(C)"),
+        (250, 200, "8"), (72, 202, "(D)"),
+    ]
+    for x, y, text in rows:
+        page.insert_text((x, y), text, fontsize=11)
+    out = io.BytesIO()
+    doc.save(out)
+    doc.close()
+    return out.getvalue()
+
+
+def test_text_before_marker_options_recovered():
+    (question,) = extract_pdf_bytes(
+        _grid_options_pdf(), stem="GRID", year=2024, subject="s", topic="t",
+    )["questions"]
+    assert [o["text"] for o in question["options"]] == ["2", "4", "6", "8"]
+    assert question["prompt"] == "Which is even?"
+
+
+def _stem_guard_pdf() -> bytes:
+    doc = fitz.open()
+    page = doc.new_page()
+    page.insert_text((72, 80), "Q.1 Which is TRUE?", fontsize=11)
+    page.insert_text((72, 110), "(A)", fontsize=11)
+    page.insert_text((72, 130), "(B) yes", fontsize=11)
+    page.insert_text((72, 150), "(C) no", fontsize=11)
+    page.insert_text((72, 170), "(D) maybe", fontsize=11)
+    out = io.BytesIO()
+    doc.save(out)
+    doc.close()
+    return out.getvalue()
+
+
+def test_stem_tail_never_reclaimed_as_option():
+    (question,) = extract_pdf_bytes(
+        _stem_guard_pdf(), stem="GUARD", year=2024, subject="s", topic="t",
+    )["questions"]
+    assert question["prompt"] == "Which is TRUE?"
+    assert len(question["options"]) == 3
+
+
+def _orphan_stem_pdf() -> bytes:
+    """Stem line sorted a hair above its Q-marker (marginal-label rows)."""
+    doc = fitz.open()
+    page1 = doc.new_page()
+    page1.insert_text((72, 80), "Q.1 First?", fontsize=11)
+    page1.insert_text((90, 110), "(A) x", fontsize=11)
+    page1.insert_text((90, 130), "(B) y", fontsize=11)
+    page2 = doc.new_page()
+    page2.insert_text((72, 84.2), "Continued stem for two.", fontsize=11)
+    page2.insert_text((72, 84.5), "Q.2", fontsize=11)
+    page2.insert_text((72, 110), "Pick?", fontsize=11)
+    page2.insert_text((90, 140), "(A) p", fontsize=11)
+    page2.insert_text((90, 160), "(B) q", fontsize=11)
+    out = io.BytesIO()
+    doc.save(out)
+    doc.close()
+    return out.getvalue()
+
+
+def test_same_row_stem_reclaimed_for_new_question():
+    first, second = extract_pdf_bytes(
+        _orphan_stem_pdf(), stem="ORPHAN", year=2024, subject="s", topic="t",
+    )["questions"]
+    assert [o["text"] for o in first["options"]] == ["x", "y"]
+    assert second["prompt"].startswith("Continued stem for two.")
+
+
+def _shifted_options_pdf() -> bytes:
+    """Every option holds its successor's text (empty middle option)."""
+    doc = fitz.open()
+    page = doc.new_page()
+    rows = [
+        (72, 80, "Q.1 Pick a color?"),
+        (72, 110, "red"),
+        (72, 112, "(A)"),
+        (72, 140, "green"),
+        (72, 142, "(B)"),
+        (72, 170, "blue"),
+        (72, 172, "(C)"),
+        (72, 200, "(D)"),
+        (72, 202, "yellow"),
+    ]
+    for x, y, text in rows:
+        page.insert_text((x, y), text, fontsize=11)
+    out = io.BytesIO()
+    doc.save(out)
+    doc.close()
+    return out.getvalue()
+
+
+def test_shifted_option_texts_realign():
+    (question,) = extract_pdf_bytes(
+        _shifted_options_pdf(), stem="SHIFT", year=2024, subject="s", topic="t",
+    )["questions"]
+    assert [o["text"] for o in question["options"]] == ["red", "green", "blue", "yellow"]
+    assert question["prompt"] == "Pick a color?"
+
+
+def _cs_footer_pdf() -> bytes:
+    doc = fitz.open()
+    page = doc.new_page()
+    page.insert_text((72, 80), "Q.1 First?", fontsize=11)
+    page.insert_text((90, 110), "(A) x", fontsize=11)
+    page.insert_text((90, 130), "(B) y", fontsize=11)
+    page.insert_text((72, 700), "CS", fontsize=9)
+    page.insert_text((72, 730), "Q.2 Second?", fontsize=11)
+    page.insert_text((90, 760), "(A) p", fontsize=11)
+    page.insert_text((90, 780), "(B) q", fontsize=11)
+    out = io.BytesIO()
+    doc.save(out)
+    doc.close()
+    return out.getvalue()
+
+
+def test_bare_cs_footer_dropped():
+    first, second = extract_pdf_bytes(
+        _cs_footer_pdf(), stem="CSF", year=2024, subject="s", topic="t",
+    )["questions"]
+    assert [o["text"] for o in first["options"]] == ["x", "y"]
+    assert first["prompt"] == "First?"
+    assert second["prompt"] == "Second?"
+    assert "CS" not in second["prompt"]
+

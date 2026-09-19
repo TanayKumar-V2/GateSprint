@@ -91,7 +91,7 @@ def extract():
                 year=year,
                 subject=params.get("subject", "Uncategorized"),
                 topic=params.get("topic", "Needs Review"),
-                max_images=_int("max_images", 4),
+                max_images=_int("max_images", 8),
                 min_image=_int("min_image", 80),
                 max_dim=_int("max_dim", 1200),
                 upload_cdn=upload_cdn,

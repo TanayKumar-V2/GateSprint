@@ -7,12 +7,14 @@ import {
   extractNumberValue,
   extractOptionLetter,
   extractOptionLetters,
+  isQuarantined,
   matchSubject,
   matchTopic,
   normalizeAnswer,
   normalizeConfidence,
   normalizeEnum,
   normalizeOptions,
+  normalizePenalty,
   normalizeQuestionNumber,
   normalizeType,
   related,
@@ -58,6 +60,29 @@ describe("taxonomy matching", () => {
   });
 });
 
+describe("isQuarantined", () => {
+  const bucketSubject = { id: "sq", name: "Uncategorized", slug: "uncategorized" };
+  const bucketTopic = { id: "tq", name: "Needs Review", slug: "needs-review", subjectId: "sq" };
+  it("treats missing or holding-bucket placements as unplaced", () => {
+    assert.equal(isQuarantined(null, null), true);
+    assert.equal(isQuarantined(subjects[0] ?? null, null), true);
+    assert.equal(isQuarantined(bucketSubject, bucketTopic), true);
+    assert.equal(
+      isQuarantined(subjects[1] ?? null, topics[1] ? { ...topics[1], slug: "needs-review" } : null),
+      true,
+    );
+  });
+  it("accepts real taxonomy placements", () => {
+    assert.equal(isQuarantined(subjects[0] ?? null, topics[0] ?? null), false);
+  });
+  it("catches extractor defaults matching the bucket itself", () => {
+    const withBucket = [...subjects, bucketSubject];
+    const matched = matchSubject(withBucket, "Uncategorized");
+    assert.equal(matched?.slug, "uncategorized");
+    assert.equal(isQuarantined(matched, bucketTopic), true);
+  });
+});
+
 describe("toNumber", () => {
   it("coerces numeric strings, preserves empties, rejects junk", () => {
     assert.equal(toNumber("2024"), 2024);
@@ -67,6 +92,18 @@ describe("toNumber", () => {
     assert.equal(toNumber(null), null);
     assert.ok(Number.isNaN(toNumber("twelve") as number));
     assert.ok(Number.isNaN(toNumber({}) as number));
+  });
+});
+
+describe("normalizePenalty", () => {
+  it("stores penalty magnitudes, preserving empties and junk", () => {
+    assert.equal(normalizePenalty(-0.33), 0.33);
+    assert.equal(normalizePenalty("-0.33"), 0.33);
+    assert.equal(normalizePenalty(0.33), 0.33);
+    assert.equal(normalizePenalty(0), 0);
+    assert.equal(normalizePenalty(null), null);
+    assert.equal(normalizePenalty(""), undefined);
+    assert.ok(Number.isNaN(normalizePenalty("a third") as number));
   });
 });
 

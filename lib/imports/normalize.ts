@@ -55,6 +55,23 @@ export const topicAliases: Record<string, string> = {
 export type TaxonomySubject = { id: string; name: string; slug: string };
 export type TaxonomyTopic = { id: string; name: string; slug: string; subjectId: string };
 
+/** Holding-bucket slugs. A match here is NOT a placement — rows carrying
+ * these values still need classification, otherwise every "Uncategorized"
+ * import would match the bucket itself and skip repair entirely. */
+export const QUARANTINE_SUBJECT_SLUG = "uncategorized";
+export const QUARANTINE_TOPIC_SLUG = "needs-review";
+
+export function isQuarantined(
+  subject: TaxonomySubject | null,
+  topic: TaxonomyTopic | null,
+): boolean {
+  if (!subject || !topic) return true;
+  return (
+    subject.slug === QUARANTINE_SUBJECT_SLUG ||
+    topic.slug === QUARANTINE_TOPIC_SLUG
+  );
+}
+
 export function matchSubject(
   subjects: TaxonomySubject[],
   value: string,
@@ -94,6 +111,14 @@ export function toNumber(value: unknown): number | null | undefined {
     return Number.isFinite(parsed) ? parsed : NaN;
   }
   return NaN;
+}
+
+/** Penalty magnitudes: models write -0.33 for a 1/3-mark deduction, but the
+ * bank stores magnitudes. Non-numbers pass through for loud rejection. */
+export function normalizePenalty(value: unknown): number | null | undefined {
+  const coerced = toNumber(value);
+  if (typeof coerced !== "number" || !Number.isFinite(coerced)) return coerced;
+  return Math.abs(coerced);
 }
 
 export function normalizeEnum(value: unknown): string {

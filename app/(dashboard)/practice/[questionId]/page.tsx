@@ -4,7 +4,7 @@ import { currentUserId } from "@/lib/current-user";
 import { getQuestionView } from "@/lib/questions";
 import { QuestionSolver } from "@/components/practice/solver";
 import { AskMentorButton } from "@/components/practice/ask-mentor-button";
-import { QuestionFigures, isFigurePlaceholder, referencedFigures } from "@/components/questions/question-figures";
+import { QuestionFigures, isFigurePlaceholder } from "@/components/questions/question-figures";
 import { MathText } from "@/components/markdown/math-text";
 
 const TYPE_LABEL = { mcq: "MCQ", msq: "MSQ", nat: "NAT" } as const;
@@ -21,13 +21,12 @@ export default async function QuestionPage({
   const view = await getQuestionView(userId, questionId);
   if (!view) notFound();
 
-  // Image-only options arrive from the extractor as "[See figure]".
-  // Figures the prompt names ([Figure N]) belong to the stem; any other
-  // stored figure is an unmapped option diagram rendered below.
+  // Image-only options arrive from the extractor as "[See figure]"; their
+  // diagrams render together with the stem's in the figure block below.
+  // Only the presence of stored figures decides the notice — marker
+  // bookkeeping can't tell stem diagrams from option diagrams.
   const hasPlaceholders = (view.options ?? []).some((o) => isFigurePlaceholder(o.text));
-  const referenced = new Set(referencedFigures(view.prompt));
-  const unmappedFigures = view.images.filter((img, index) => !referenced.has(index + 1));
-  const figureNotice = !hasPlaceholders ? null : unmappedFigures.length > 0 ? "below" : "missing";
+  const figureNotice = !hasPlaceholders ? null : view.images.length > 0 ? "below" : "missing";
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">

@@ -29,7 +29,7 @@ python extract.py ..\..\GATE-CS-2024.pdf --year 2024 -o gate-cs-2024.json
 ```
 
 Useful flags: `--subject/--topic` (defaults park rows in
-Uncategorized / Needs Review), `--source-label`, `--max-images` (default 4),
+Uncategorized / Needs Review), `--source-label`, `--max-images` (default 8),
 `--min-image` (default 80 px), `--max-dim` (default 1200 px), `--upload-cdn`.
 
 ## ImageKit CDN (optional)
