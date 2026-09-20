@@ -5,6 +5,13 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import { cn } from "@/lib/utils";
 
+function mapNonMathSegments(text: string, transform: (plain: string) => string): string {
+  return text
+    .split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+\$)/g)
+    .map((chunk, index) => (index % 2 === 1 ? chunk : transform(chunk)))
+    .join("");
+}
+
 /**
  * The model sometimes emits \(...\) / \[...\] delimiters despite being
  * told to use dollar signs. Normalize those to $/$$ so symbols render
@@ -28,6 +35,12 @@ export function normalizeMathDelimiters(input: string): string {
             .replace(/(?<!\\)\\\[/g, "$$$$")
             .replace(/(?<!\\)\\\]/g, "$$$$");
 
+          // Repair Form Feed (0x0C / \u000c) / Unicode arrow artifacts and tab/backspace control characters from unescaped JSON
+          text = text
+            .replace(/[\x0c\u000c\u2b06\u2191⬆]\s*(rac|orall|lat)/g, "\\f$1")
+            .replace(/\x08(ar|egin|end|eta|ox|inom|ullet)/g, "\\b$1")
+            .replace(/\x09(ext|heta|imes|au|an|ilde|o|riangle|op)/g, "\\t$1");
+
           // Convert common unicode math symbols into LaTeX math equivalents
           text = text
             .replace(/∈/g, "\\in ")
@@ -39,21 +52,43 @@ export function normalizeMathDelimiters(input: string): string {
             .replace(/≠/g, "\\neq ");
 
           // Fix PDF extraction artifacts where single variable power digits lack carets (e.g. n2 -> $n^2$)
-          text = text.replace(
-            /(?<![a-zA-Z0-9$])([nxyzkm])([2-9])(?![a-zA-Z0-9$])/g,
-            "$$" + "$1^$2" + "$$",
+          text = mapNonMathSegments(text, (s) =>
+            s.replace(
+              /(?<![a-zA-Z0-9])([nxyzkm])([2-9])(?![a-zA-Z0-9])/g,
+              "$$" + "$1^$2" + "$$",
+            ),
+          );
+
+          // Auto-wrap fraction expressions like U=\frac{a}{b} or \frac{a}{b} if not already inside dollar delimiters
+          text = mapNonMathSegments(text, (s) =>
+            s.replace(
+              /(?:^|(?<=[^a-zA-Z0-9\\]))([a-zA-Z0-9_()]*[=+\-*\/]?\s*\\frac\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}[a-zA-Z0-9_()*+\-\/=]*)/g,
+              "$$" + "$1" + "$$",
+            ),
+          );
+
+          // Auto-wrap subscript expressions like T_{tx}, T_{prop}, x_{1} if not already inside dollar delimiters
+          text = mapNonMathSegments(text, (s) =>
+            s.replace(
+              /\b([a-zA-Z][a-zA-Z0-9]*_\{[^{}]+\})/g,
+              "$$" + "$1" + "$$",
+            ),
           );
 
           // Wrap math expressions containing LaTeX commands missing dollar delimiters (e.g. f \in O(g) -> $f \in O(g)$)
-          text = text.replace(
-            /(?<!\$)\b([a-zA-Z0-9_()]+(?:\s*(?:\\in|\\Omega|\\Theta|\\notin|\\le|\\ge|\\neq|\\hat|\\bar|\\vec)\s*[a-zA-Z0-9_()]+)+)(?!\$)/g,
-            "$$" + "$1" + "$$",
+          text = mapNonMathSegments(text, (s) =>
+            s.replace(
+              /\b([a-zA-Z0-9_()]+(?:\s*(?:\\in|\\Omega|\\Theta|\\notin|\\le|\\ge|\\neq|\\hat|\\bar|\\vec)\s*[a-zA-Z0-9_()]+)+)/g,
+              "$$" + "$1" + "$$",
+            ),
           );
 
           // Auto-wrap standalone caret expressions (like n^2 or O(n^2)) if not already inside dollar delimiters
-          text = text.replace(
-            /(?<!\$)\b([O|o|\\]?[a-zA-Z_()]*[a-zA-Z0-9_()]+\^[0-9a-zA-Z_()]+)(?!\$)/g,
-            "$$" + "$1" + "$$",
+          text = mapNonMathSegments(text, (s) =>
+            s.replace(
+              /\b([O|o|\\]?[a-zA-Z_()]*[a-zA-Z0-9_()]+\^[0-9a-zA-Z_()]+)/g,
+              "$$" + "$1" + "$$",
+            ),
           );
 
           return text;

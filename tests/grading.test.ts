@@ -143,6 +143,18 @@ describe("parseAiGrade", () => {
         explanation: "x",
       }
     );
+    assert.deepEqual(
+      parseAiGrade(
+        '{"verdict":"correct","correctAnswer":{"kind":"mcq","optionId":"A"},"explanation":"U=\\frac{a}{b}"}',
+        "mcq",
+        options,
+      ),
+      {
+        verdict: "correct",
+        correctAnswer: { kind: "mcq", optionId: "A" },
+        explanation: "U=\\frac{a}{b}",
+      }
+    );
     assert.equal(
       parseAiGrade(
         '{"verdict":"cannot_judge"}',

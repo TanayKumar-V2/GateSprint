@@ -102,6 +102,13 @@ export function buildGradePrompt(input: GradeInput): string {
   );
 }
 
+export function sanitizeRawJsonLatex(jsonString: string): string {
+  return jsonString.replace(
+    /(?<!\\)\\(frac|text|theta|times|tau|tan|tilde|to|bar|begin|end|beta|binom|bullet|forall|le|ge|neq|in|notin|sum|prod|infty|lim|alpha|gamma|delta|epsilon|lambda|mu|pi|sigma|phi|psi|omega|sqrt|cdot|circ|cup|cap|subset|supset|left|right|over|under|log|ln|exp|max|min|arg|det|dim|gcd)\b/g,
+    "\\\\$1",
+  );
+}
+
 /**
  * Validate raw model text into an AiGrade. Returns null when the output is
  * unusable (caller treats that as a retryable provider failure).
@@ -116,7 +123,8 @@ export function parseAiGrade(
   if (start < 0 || end <= start) return null;
   let raw: unknown;
   try {
-    raw = JSON.parse(text.slice(start, end + 1)) as unknown;
+    const rawJson = text.slice(start, end + 1);
+    raw = JSON.parse(sanitizeRawJsonLatex(rawJson)) as unknown;
   } catch {
     return null;
   }

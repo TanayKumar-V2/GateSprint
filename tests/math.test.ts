@@ -23,9 +23,15 @@ describe("normalizeMathDelimiters", () => {
       normalizeMathDelimiters("given by f(n) = n and g(n) = n2."),
       "given by f(n) = n and g(n) = $n^2$.",
     );
+  });
+  it("repairs control character/arrow artifacts and auto-wraps fractions and subscripts", () => {
     assert.equal(
-      normalizeMathDelimiters("f∈O(g)"),
-      "$f\\in O(g)$",
+      normalizeMathDelimiters("utilization is U=⬆rac{T_{tx}}{T_{tx}+T_{prop}}"),
+      "utilization is $U=\\frac{T_{tx}}{T_{tx}+T_{prop}}$",
+    );
+    assert.equal(
+      normalizeMathDelimiters("where T_{tx} is transmission time"),
+      "where $T_{tx}$ is transmission time",
     );
   });
 });
