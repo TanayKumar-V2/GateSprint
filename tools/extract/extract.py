@@ -51,6 +51,12 @@ RANGE_MARKS_RE = re.compile(
 )
 MSQ_HINT_RE = re.compile(r"multiple\s+select|\bMSQ\b|more than one.*correct", re.IGNORECASE)
 NAT_HINT_RE = re.compile(r"numerical\s+answer|\bNAT\b|enter.*number|numeric.*blank", re.IGNORECASE)
+
+# Per-question MSQ wording (GATE convention) for papers without MSQ section
+# headers: "is/are" or "(one or more)" picks MSQ unless the stem says
+# "which ONE of the following" (single correct).
+MSQ_PHRASE_RE = re.compile(r"is/are|\(one\s+or\s+more\)", re.IGNORECASE)
+MCQ_PHRASE_RE = re.compile(r"which\s+one\s+of\s+the\s+following", re.IGNORECASE)
 YEAR_RE = re.compile(r"\b(19\d{2}|20\d{2})\b")
 PAGE_NUM_RE = re.compile(r"^\d{1,3}$")
 
@@ -684,6 +690,10 @@ def _build_question(
     has_options = len(fixed_options) >= 2
     if has_options:
         question_type = "msq" if section == "msq" else "mcq"
+        if question_type == "mcq":
+            stem_text = " ".join(prompt_lines)
+            if MSQ_PHRASE_RE.search(stem_text) and not MCQ_PHRASE_RE.search(stem_text):
+                question_type = "msq"
     else:
         question_type = "nat"
         fixed_options = []

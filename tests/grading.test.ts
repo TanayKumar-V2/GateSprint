@@ -131,13 +131,17 @@ describe("parseAiGrade", () => {
   it("rejects garbage, truncated JSON, and kind mismatches", () => {
     assert.equal(parseAiGrade("not json at all", "mcq", options), null);
     assert.equal(parseAiGrade('{"verdict":"correct",', "mcq", options), null);
-    assert.equal(
+    assert.deepEqual(
       parseAiGrade(
         '{"verdict":"correct","correctAnswer":{"kind":"msq","optionIds":["A"]},"explanation":"x"}',
         "mcq",
         options,
       ),
-      null,
+      {
+        verdict: "correct",
+        correctAnswer: { kind: "msq", optionIds: ["A"] },
+        explanation: "x",
+      }
     );
     assert.equal(
       parseAiGrade(

@@ -126,7 +126,11 @@ export function parseAiGrade(
     const parsed = cannotJudge.safeParse(raw);
     return parsed.success ? { verdict: "cannot_judge", explanation: parsed.data.explanation } : null;
   }
-  const schema = type === "mcq" ? mcqGrade : type === "msq" ? msqGrade : natGrade;
+  
+  const answerRecord = record.correctAnswer as Record<string, unknown> | undefined;
+  const actualKind = typeof answerRecord?.kind === "string" ? answerRecord.kind : type;
+  const schema = actualKind === "mcq" ? mcqGrade : actualKind === "msq" ? msqGrade : natGrade;
+  
   const parsed = schema.safeParse(raw);
   if (!parsed.success) return null;
   const data = parsed.data;

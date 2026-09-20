@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>GATE Mentor — Brag</title>
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/music/audio-data-20s.js"></script>
+    <style>
+      html, body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #0a0a0a;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #0a0a0a;
+        color: #eaeaea;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+      .clip {
+        position: absolute;
+        inset: 0;
+      }
+      .mono {
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .macro {
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: -0.045em;
+        line-height: 0.9;
+      }
+      /* persistent atmosphere */
+      #bg-fill { position: absolute; inset: 0; background: #0a0a0a; }
+      #scanlines {
+        position: absolute; inset: 0; pointer-events: none;
+        background-image: repeating-linear-gradient(
+          0deg, transparent, transparent 2px, rgb(0 0 0 / 0.28) 2px, rgb(0 0 0 / 0.28) 4px
+        );
+      }
+      #vignette {
+        position: absolute; inset: 0; pointer-events: none;
+        background: radial-gradient(ellipse at center, transparent 55%, rgb(0 0 0 / 0.55) 100%);
+      }
+      #hero-glow {
+        position: absolute; left: 50%; top: 44%;
+        width: 1300px; height: 620px;
+        margin-left: -650px; margin-top: -310px;
+        background: radial-gradient(ellipse at center, rgb(255 42 42 / 0.14), transparent 70%);
+        pointer-events: none;
+      }
+      .stripes {
+        height: 22px;
+        background-image: repeating-linear-gradient(
+          -45deg, #ff2a2a 0 26px, #0a0a0a 26px 52px
+        );
+      }
+      .cross { position: absolute; color: #8f8f8f; font-size: 30px; line-height: 1; }
+      /* scene 1 */
+      #s1-inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+      #s1-eyebrow { font-size: 26px; color: #8f8f8f; }
+      #s1-line1 { font-size: 150px; color: #eaeaea; margin-top: 34px; }
+      #s1-rule { width: 520px; height: 6px; background: #ff2a2a; margin-top: 40px; display: block; }
+      #s1-line2 { font-size: 150px; color: #ff2a2a; margin-top: 26px; }
+      /* scene 2 */
+      #s2-inner { position: absolute; inset: 0; padding: 64px 96px 0 96px; display: flex; flex-direction: column; }
+      #s2-tele { display: flex; gap: 0; border: 1px solid #2b2b2b; }
+      .tele-cell { flex: 1; padding: 20px 28px; border-right: 1px solid #2b2b2b; font-size: 24px; color: #eaeaea; display: block; }
+      .tele-cell:last-child { border-right: none; }
+      .tele-cell .k { color: #8f8f8f; font-size: 20px; display: block; margin-bottom: 8px; }
+      .tele-live { color: #4af626; }
+      #s2-head { margin-top: 56px; font-size: 132px; color: #eaeaea; }
+      #s2-head .ln { display: block; }
+      #s2-count { display: inline-block; background: #ff2a2a; color: #0a0a0a; padding: 8px 24px; line-height: 1.25; }
+      #s2-sub { margin-top: 44px; font-size: 27px; line-height: 1.6; color: #8f8f8f; max-width: 1500px; }
+      #s2-sub .hi { color: #eaeaea; }
+      #s2-stripes { margin-top: auto; margin-left: -96px; margin-right: -96px; }
+      /* scene 3 */
+      #s3-inner { position: absolute; inset: 0; padding: 56px 84px 64px 84px; display: flex; flex-direction: column; }
+      #s3-head { font-size: 64px; color: #eaeaea; }
+      #s3-head .rd { color: #ff2a2a; }
+      #s3-panels { margin-top: 36px; display: flex; gap: 28px; flex: 1; }
+      .panel { flex: 1; border: 1px solid #2b2b2b; background: #121212; padding: 30px 32px; display: flex; flex-direction: column; }
+      .panel .plab { font-size: 22px; color: #8f8f8f; display: block; }
+      .panel .ptitle { font-size: 30px; font-weight: 800; color: #eaeaea; margin-top: 10px; display: block; }
+      #p1-meta { margin-top: 18px; font-size: 21px; color: #8f8f8f; display: block; }
+      #p1-stem { margin-top: 14px; font-size: 25px; line-height: 1.5; color: #eaeaea; display: block; }
+      .opt { margin-top: 12px; border: 1px solid #4a4a4a; padding: 12px 16px; font-size: 23px; color: #eaeaea; display: block; }
+      #p1-optB { border-color: #4a4a4a; }
+      #p1-submit { margin-top: 16px; background: #ff2a2a; color: #0a0a0a; font-size: 22px; font-weight: 700; padding: 12px 0; text-align: center; display: block; }
+      #p1-result { margin-top: 14px; font-size: 24px; font-weight: 700; padding: 12px 16px; display: block; background: #ff2a2a; color: #0a0a0a; }
+      #p2-chip { margin-top: 18px; font-size: 20px; color: #0a0a0a; background: #eaeaea; padding: 10px 14px; display: block; }
+      .mline { margin-top: 14px; font-size: 23px; line-height: 1.5; color: #eaeaea; display: block; }
+      .mline .tk { color: #ff2a2a; }
+      #p3-bm { margin-top: 18px; font-size: 23px; color: #0a0a0a; background: #4af626; padding: 12px 16px; font-weight: 700; display: block; }
+      #p3-prog { margin-top: 14px; font-size: 23px; color: #eaeaea; border: 1px solid #4a4a4a; padding: 12px 16px; display: block; }
+      #p3-prog .wk { color: #ff2a2a; font-weight: 700; }
+      #p3-cta { margin-top: 14px; font-size: 21px; color: #8f8f8f; display: block; }
+      #cursor {
+        position: absolute; width: 34px; height: 34px; display: block;
+        filter: drop-shadow(0 0 6px rgb(234 234 234 / 0.6));
+      }
+      #cursor .cur-arrow {
+        display: block; width: 0; height: 0;
+        border-left: 16px solid #eaeaea; border-top: 16px solid transparent; border-bottom: 16px solid transparent;
+        transform: rotate(-45deg);
+      }
+      /* scene 4 */
+      #s4-inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+      #s4-table { width: 1240px; border: 1px solid #2b2b2b; }
+      .trow { display: flex; justify-content: space-between; padding: 18px 30px; font-size: 25px; color: #eaeaea; border-bottom: 1px solid #2b2b2b; }
+      .trow:last-child { border-bottom: none; }
+      .trow .vol { color: #8f8f8f; }
+      #s4-lock { margin-top: 54px; font-size: 120px; color: #eaeaea; }
+      #s4-stats { margin-top: 26px; font-size: 34px; color: #8f8f8f; }
+      #s4-stats .r { color: #ff2a2a; }
+      #s4-cta { margin-top: 30px; font-size: 30px; font-weight: 700; background: #ff2a2a; color: #0a0a0a; padding: 16px 46px; display: block; }
+      #s4-live { margin-top: 26px; font-size: 22px; color: #8f8f8f; }
+      #s4-live .dot { color: #4af626; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="20" data-width="1920" data-height="1080">
+      <div id="bg-fill"></div>
+      <div id="hero-glow"></div>
+
+      <!-- SCENE 1 · Hook · 0-4 -->
+      <section id="s1" class="clip" data-start="0" data-duration="4" data-track-index="0">
+        <div id="s1-inner">
+          <div id="s1-eyebrow" class="mono">[ Final transmission /// auth required ]</div>
+          <div id="s1-line1" class="macro">Stop guessing.</div>
+          <span id="s1-rule"></span>
+          <div id="s1-line2" class="macro">Start knowing.</div>
+        </div>
+      </section>
+
+      <!-- SCENE 2 · Reveal · 4-8.8 -->
+      <section id="s2" class="clip" data-start="4" data-duration="4.8" data-track-index="1">
+        <div id="s2-inner">
+          <div id="s2-tele" class="mono">
+            <span class="tele-cell"><span class="k">Exam</span>GATE CS/IT</span>
+            <span class="tele-cell"><span class="k">Bank</span>083+ units</span>
+            <span class="tele-cell"><span class="k">Link</span><span class="tele-live">● Live</span></span>
+          </div>
+          <div id="s2-head" class="macro"><span class="ln">Make every</span><span class="ln">question <span id="s2-count">count®</span></span></div>
+          <div id="s2-sub" class="mono"><span class="hi">Practice previous-year questions.</span> Get step-by-step explanations from a mentor that remembers your context.</div>
+          <div id="s2-stripes" class="stripes"></div>
+        </div>
+      </section>
+
+      <!-- SCENE 3 · The loop · 8.8-16 -->
+      <section id="s3" class="clip" data-start="8.8" data-duration="7.2" data-track-index="2">
+        <div id="s3-inner">
+          <div id="s3-head" class="macro">Attempt. Miss. <span class="rd">Patch. Retain.</span></div>
+          <div id="s3-panels">
+            <div id="p1" class="panel">
+              <span class="plab mono">01 /// Attempt with intent</span>
+              <span class="ptitle mono">Timed PYQ</span>
+              <span id="p1-meta" class="mono">GATE 2023 CS · OS · MCQ · 02:14</span>
+              <span id="p1-stem">Which scheduling algorithm guarantees no starvation?</span>
+              <span class="opt mono">A · FCFS</span>
+              <span id="p1-optB" class="opt mono">B · SJF preemptive</span>
+              <span class="opt mono">C · Round robin</span>
+              <span id="p1-submit" class="mono">Submit ›››</span>
+              <span id="p1-result" class="mono">✗ Incorrect — correct: C</span>
+            </div>
+            <div id="p2" class="panel">
+              <span class="plab mono">02 /// Understand every miss</span>
+              <span class="ptitle mono">Mentor dissects it</span>
+              <span id="p2-chip" class="mono">Pick B / Correct C attached</span>
+              <span id="p2-m1" class="mline"><span class="tk">Trap ›</span> SJF favors short jobs; long jobs starve.</span>
+              <span id="p2-m2" class="mline"><span class="tk">Step 1 ›</span> Compare waiting-time bounds per option.</span>
+              <span id="p2-m3" class="mline"><span class="tk">Step 2 ›</span> Round robin bounds waits by quantum.</span>
+            </div>
+            <div id="p3" class="panel">
+              <span class="plab mono">03 /// Retain what matters</span>
+              <span class="ptitle mono">Queued for revision</span>
+              <span id="p3-bm" class="mono">★ Bookmarked ✓</span>
+              <span id="p3-prog" class="mono">OS accuracy 42% → <span class="wk">weak</span></span>
+              <span id="p3-cta" class="mono">Next: 3 queued questions ›</span>
+            </div>
+          </div>
+        </div>
+        <div id="cursor"><span class="cur-arrow"></span></div>
+      </section>
+
+      <!-- SCENE 4 · Outro · 16-20 -->
+      <section id="s4" class="clip" data-start="16" data-duration="4" data-track-index="3">
+        <div id="s4-inner">
+          <div id="s4-table" class="mono">
+            <div class="trow" id="s4-r1"><span>01 /// Operating systems</span><span class="vol">142 PYQ</span></div>
+            <div class="trow" id="s4-r2"><span>02 /// Algorithms</span><span class="vol">168 PYQ</span></div>
+            <div class="trow" id="s4-r3"><span>03 /// Databases</span><span class="vol">121 PYQ</span></div>
+          </div>
+          <div id="s4-lock" class="macro">Gate-Mentor®</div>
+          <div id="s4-stats" class="mono">083+ PYQ units<span class="r">.</span> 08 subjects<span class="r">.</span> 01 mentor<span class="r">.</span></div>
+          <span id="s4-cta" class="mono">Open the question bank +</span>
+          <div id="s4-live" class="mono"><span class="dot" id="s4-dot">●</span> Live · Field manual rev 2.6</div>
+        </div>
+      </section>
+
+      <div id="scanlines"></div>
+      <div id="vignette"></div>
+
+      <!-- AUDIO -->
+      <audio id="bg-music" data-start="0" data-duration="20" data-track-index="10" data-volume="0.3" data-timeline-role="music" src="assets/music/happy-beats-business-moves-vol-12-by-ende-dot-app.mp3" data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":0},{"t":0.6,"v":1},{"t":18.5,"v":1},{"t":20,"v":0}]}]}'></audio>
+      <audio id="sfx-hero" data-start="4.4" data-duration="0.12" data-track-index="11" data-volume="0.6" src="assets/sfx/interface/bong_001.ogg"></audio>
+      <audio id="sfx-click" data-start="10.3" data-duration="0.06" data-track-index="12" data-volume="0.8" src="assets/sfx/ui/mouseclick1.ogg"></audio>
+      <audio id="sfx-card" data-start="11.2" data-duration="0.46" data-track-index="13" data-volume="0.7" src="assets/sfx/casino/card-place-2.ogg"></audio>
+      <audio id="sfx-chip" data-start="14" data-duration="0.09" data-track-index="14" data-volume="0.7" src="assets/sfx/ui/click1.ogg"></audio>
+      <audio id="sfx-logo" data-start="17.4" data-duration="1.48" data-track-index="15" data-volume="0.7" src="assets/sfx/impact/impactBell_heavy_000.ogg"></audio>
+    </div>
+    <script>
+      var tl = gsap.timeline({ paused: true });
+
+      /* ---------- SCENE 1 · 0-4 ---------- */
+      tl.fromTo("#s1-eyebrow", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.2);
+      tl.fromTo("#s1-line1", { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.5);
+      tl.fromTo("#s1-rule", { opacity: 0, scaleX: 0 }, { opacity: 1, scaleX: 1, duration: 0.4, ease: "power3.out" }, 1.7);
+      tl.fromTo("#s1-line2", { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 2.0);
+      tl.to("#s1-inner", { opacity: 0, duration: 0.6, ease: "power2.in" }, 3.4);
+
+      /* ---------- SCENE 2 · 4-8.8 ---------- */
+      // beat-locked: headline at 4.4 (~strong beat 4.39)
+      tl.fromTo("#s2-tele", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 4.1);
+      tl.fromTo("#s2-head", { opacity: 0, y: 70 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 4.4);
+      tl.fromTo("#s2-count", { scale: 0.6 }, { scale: 1, duration: 0.45, ease: "back.out(2)" }, 4.9);      tl.fromTo("#s2-sub", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 5.3);
+      tl.fromTo("#s2-stripes", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 5.6);
+      // beat-locked: COUNT glow pulse at 8.18 (measured beat grid)
+      tl.fromTo("#s2-count", { scale: 1 }, { scale: 1.06, duration: 0.18, yoyo: true, repeat: 1, ease: "power2.inOut", immediateRender: false }, 8.1);
+      tl.to("#s2-inner", { opacity: 0, duration: 0.6, ease: "power2.in" }, 8.2);
+
+      /* ---------- SCENE 3 · 8.8-16 ---------- */
+      tl.fromTo("#s3-head", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 8.9);
+      tl.fromTo("#p1", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 9.0);
+      tl.fromTo("#cursor", { opacity: 0, x: 300, y: 700 }, { opacity: 1, x: 300, y: 700, duration: 0.3 }, 9.4);
+      tl.to("#cursor", { x: 430, y: 500, duration: 0.6, ease: "power2.inOut" }, 9.75);
+      // beat-grid: click lands on beat 10.37
+      tl.fromTo("#cursor", { scale: 1 }, { scale: 0.8, duration: 0.12, yoyo: true, repeat: 1, immediateRender: false }, 10.3);
+      tl.fromTo("#p1-optB", { backgroundColor: "rgba(0,0,0,0)" }, { backgroundColor: "rgba(255,42,42,0.85)", duration: 0.3 }, 10.35);
+      tl.fromTo("#p1-submit", { opacity: 0.4 }, { opacity: 1, duration: 0.3 }, 10.7);
+      tl.fromTo("#p2", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 9.8);
+      tl.fromTo("#p1-result", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 11.2);
+      tl.fromTo("#p2-chip", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 11.5);
+      tl.fromTo("#p2-m1", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 11.9);
+      tl.fromTo("#p2-m2", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 12.5);
+      // beat-locked: mentor payoff line at 13.1 (~strong cue 13.11)
+      tl.fromTo("#p2-m3", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 13.1);
+      tl.fromTo("#p3", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 10.6);
+      tl.fromTo("#p3-bm", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 14.0);
+      tl.fromTo("#p3-prog", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 14.5);
+      tl.fromTo("#p3-cta", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 14.9);
+      tl.to("#s3-inner", { opacity: 0, duration: 0.6, ease: "power2.in" }, 15.4);
+      tl.to("#cursor", { x: 500, y: 640, duration: 0.5, ease: "power2.inOut" }, 10.8);
+      tl.to("#cursor", { opacity: 0, duration: 0.3 }, 11.6);
+
+      /* ---------- SCENE 4 · 16-20 ---------- */
+      tl.fromTo("#s4-table", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 16.05);
+      tl.fromTo("#s4-r1", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.3 }, 16.1);
+      tl.fromTo("#s4-r2", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.3 }, 16.35);
+      tl.fromTo("#s4-r3", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.3 }, 16.6);
+      tl.to("#s4-table", { opacity: 0.18, duration: 0.4 }, 17.0);
+      // beat-locked: logo slam at 17.47 (strong cue)
+      tl.fromTo("#s4-lock", { opacity: 0, scale: 1.25 }, { opacity: 1, scale: 1, duration: 0.45, ease: "power4.out" }, 17.4);
+      tl.fromTo("#s4-stats", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 17.9);
+      tl.fromTo("#s4-cta", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 18.0);
+      tl.fromTo("#s4-live", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 18.3);
+      tl.fromTo("#s4-dot", { opacity: 1 }, { opacity: 0.25, duration: 0.25, yoyo: true, repeat: 3 }, 18.5);
+
+      /* ---------- audio-reactive hero glow (per-frame RMS/bass sampling) ---------- */
+      // Subtle only: bass breathes the red ambient glow. No waveform/visualizer graphics.
+      (function () {
+        var frames = (typeof AUDIO_DATA !== "undefined" && AUDIO_DATA && AUDIO_DATA.frames) ? AUDIO_DATA.frames : [];
+        var glow = document.getElementById("hero-glow");
+        var total = 600; // 20s at 30fps
+        for (var f = 0; f < total; f++) {
+          tl.call(
+            (function (frame) {
+              return function () {
+                var b = frame && frame.bands ? frame.bands[0] : 0;
+                if (glow) glow.style.opacity = (0.25 + 0.55 * b).toFixed(3);
+              };
+            })(frames[f]),
+            [],
+            f / 30
+          );
+        }
+      })();
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
