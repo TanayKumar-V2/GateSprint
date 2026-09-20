@@ -46,7 +46,7 @@ export function QuestionCard({ question }: { question: QuestionListItem }) {
         />
       </div>
       <div className="crt-micro flex items-center justify-between border-t border-(--crt-line) px-4 py-2.5 text-[10px] text-(--crt-dim)">
-        <span className="truncate">
+        <span className="min-w-0 truncate">
           {question.sourceLabel ?? `GATE ${question.year}`}
           {question.questionNumber ? ` · Q${question.questionNumber}` : ""}
           {question.images.length > 0 ? ` · FIG[${question.images.length}]` : ""}

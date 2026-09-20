@@ -3,6 +3,7 @@ import { isSignInConfigured } from "@/lib/auth";
 import { SignInDialog } from "@/components/auth/sign-in-dialog";
 import { ThemeLogo } from "@/components/theme-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { MobileMenu } from "@/components/landing/mobile-menu";
 
 /**
  * TACTICAL TELEMETRY nav unit.
@@ -28,13 +29,13 @@ export async function LandingNav() {
         <span>UNIT / D-01</span>
       </div>
       {/* Command row */}
-      <nav aria-label="Primary" className="grid grid-cols-[1fr_auto] sm:grid-cols-[auto_1fr_auto]">
+      <nav aria-label="Primary" className="relative grid grid-cols-[1fr_auto] sm:grid-cols-[auto_1fr_auto]">
         <Link
           href="/"
-          className="crt-micro flex items-center gap-3 border-r border-(--crt-line) px-4 py-3 text-[12px] font-bold sm:px-6 sm:text-[13px]"
+          className="crt-micro flex min-w-0 items-center gap-3 border-r border-(--crt-line) px-3 py-3 text-[12px] font-bold sm:px-6 sm:text-[13px]"
         >
           <ThemeLogo />
-          <span>
+          <span className="truncate">
             GATE-MENTOR<span className="text-(--crt-red)">_</span>
           </span>
         </Link>
@@ -49,11 +50,12 @@ export async function LandingNav() {
             [ PROGRESS ]
           </Link>
         </div>
-        <div className="flex items-stretch">
+        <div className="flex min-w-0 items-stretch">
+          <MobileMenu />
           <ThemeToggle className="border-l border-(--crt-line)" />
           <SignInDialog
             configured={configured}
-            triggerClassName="crt-micro border-l border-(--crt-line) bg-(--crt-red) px-4 py-3 text-[12px] font-bold text-(--crt-bg) transition-colors hover:bg-(--crt-ink) sm:px-8"
+            triggerClassName="crt-micro border-l border-(--crt-line) bg-(--crt-red) px-3 py-3 text-[11px] font-bold text-(--crt-bg) transition-colors hover:bg-(--crt-ink) sm:px-8 sm:text-[12px]"
           >
             INITIATE &gt;&gt;&gt;
           </SignInDialog>

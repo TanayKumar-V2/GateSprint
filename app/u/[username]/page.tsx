@@ -94,7 +94,7 @@ export default async function ProfilePage({
                   }).toUpperCase()}
                 </li>
                 {isOwner && user.email ? (
-                  <li>{user.email.toUpperCase()}</li>
+                  <li className="break-all">{user.email.toUpperCase()}</li>
                 ) : null}
               </ul>
             </div>

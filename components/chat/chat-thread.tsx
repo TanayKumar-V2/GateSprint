@@ -205,7 +205,7 @@ export function ChatThread({
         </p>
       ) : null}
 
-      <div className="sticky bottom-0 flex items-stretch gap-px border border-(--crt-line) bg-(--crt-line)">
+      <div className="sticky bottom-0 flex min-w-0 items-stretch gap-px border border-(--crt-line) bg-(--crt-line)">
         {streaming ? (
           <button
             type="button"
@@ -234,11 +234,11 @@ export function ChatThread({
               }}
               rows={2}
               placeholder="ASK ABOUT A CONCEPT OR A QUESTION…"
-              className="crt-field min-h-10 flex-1 border-0 text-[13px] normal-case tracking-normal"
+              className="crt-field min-h-11 min-w-0 flex-1 border-0 text-base normal-case tracking-normal sm:text-[13px]"
             />
             <button
               type="button"
-              className="crt-btn-red min-h-11 shrink-0 border-0"
+              className="crt-btn-red max-sm:px-3 min-h-11 shrink-0 border-0"
               disabled={input.trim() === ""}
               onClick={() => {
                 const text = input;
@@ -253,7 +253,7 @@ export function ChatThread({
                 type="button"
                 title="Get a fresh reply to the last message (added below, history kept)"
                 onClick={() => void send(lastUser.content, { appendUser: false })}
-                className="crt-btn-line min-h-11 shrink-0 border-0 border-l border-(--crt-line)"
+                className="crt-btn-line max-sm:px-3 min-h-11 shrink-0 border-0 border-l border-(--crt-line)"
               >
                 RETRY
               </button>

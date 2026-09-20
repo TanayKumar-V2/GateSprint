@@ -67,7 +67,7 @@ export default async function ProgressPage() {
       <div className="mx-auto flex max-w-2xl flex-col gap-6">
         <header>
           <p className="crt-micro text-[11px] text-(--crt-red)">[ 03 {"///"} TELEMETRY ]</p>
-          <h1 className="crt-macro mt-2 text-[clamp(2.6rem,7vw,5rem)] text-(--crt-ink)">
+          <h1 className="crt-macro mt-2 text-[clamp(2.2rem,7vw,5rem)] text-(--crt-ink)">
             PROGRESS<span className="text-(--crt-red)">.</span>
           </h1>
           <p className="crt-micro mt-3 text-[11px] text-(--crt-dim)">
@@ -119,24 +119,24 @@ export default async function ProgressPage() {
             </div>
           </div>
           <dl className="grid flex-1 grid-cols-3 gap-px border border-(--crt-line) bg-(--crt-line)">
-            <div className="bg-(--crt-bg) p-4">
+            <div className="min-w-0 bg-(--crt-bg) p-3 sm:p-4">
               <dt className="crt-label">Attempts</dt>
-              <dd className="crt-macro mt-1 text-3xl tabular-nums text-(--crt-ink)">
+              <dd className="crt-macro mt-1 text-2xl tabular-nums text-(--crt-ink) sm:text-3xl">
                 {overall.attempts}
               </dd>
             </div>
-            <div className="bg-(--crt-bg) p-4">
+            <div className="min-w-0 bg-(--crt-bg) p-3 sm:p-4">
               <dt className="crt-label">Tried</dt>
-              <dd className="crt-macro mt-1 text-3xl tabular-nums text-(--crt-ink)">
+              <dd className="crt-macro mt-1 text-2xl tabular-nums text-(--crt-ink) sm:text-3xl">
                 {overall.attemptedQuestions}
-                <span className="text-lg text-(--crt-dim)">
+                <span className="text-sm text-(--crt-dim) sm:text-lg">
                   /{overall.totalQuestions}
                 </span>
               </dd>
             </div>
-            <div className="bg-(--crt-bg) p-4">
+            <div className="min-w-0 bg-(--crt-bg) p-3 sm:p-4">
               <dt className="crt-label">Weak</dt>
-              <dd className="crt-macro mt-1 text-3xl tabular-nums text-(--crt-red)">
+              <dd className="crt-macro mt-1 text-2xl tabular-nums text-(--crt-red) sm:text-3xl">
                 {progress.weakTopics.length}
               </dd>
             </div>

@@ -67,7 +67,7 @@ export default async function QuestionPage({
             {view.sourceLabel ? ` · ${view.sourceLabel}` : ""}
             {view.questionNumber ? ` · Q${view.questionNumber}` : ""}
           </p>
-          <h1 className="prose-study text-lg font-medium leading-8 text-(--crt-ink)">
+          <h1 className="prose-study min-w-0 text-lg font-medium leading-8 break-words text-(--crt-ink)">
             <MathText text={view.prompt} inline />
           </h1>
           <QuestionFigures questionId={view.id} images={view.images} />

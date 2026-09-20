@@ -15,7 +15,7 @@ export default async function BookmarksPage() {
     <div className="flex flex-col gap-6">
       <header>
         <p className="crt-micro text-[11px] text-(--crt-red)">[ 04 {"///"} SAVED-BUFFER ]</p>
-        <h1 className="crt-macro mt-2 text-[clamp(2.6rem,7vw,5.5rem)] text-(--crt-ink)">
+        <h1 className="crt-macro mt-2 text-[clamp(2.2rem,7vw,5.5rem)] text-(--crt-ink)">
           SAVED<span className="text-(--crt-red)">.</span>
         </h1>
         <p className="crt-micro mt-3 text-[11px] text-(--crt-dim)">

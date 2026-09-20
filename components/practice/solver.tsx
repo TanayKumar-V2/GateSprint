@@ -256,7 +256,7 @@ export function QuestionSolver({
                     onChange={() => toggleOption(option.id)}
                     className="crt-check mt-1"
                   />
-                  <span>
+                  <span className="min-w-0 flex-1 break-words">
                     <strong className="mr-2 font-mono text-(--crt-red)">{option.id}.</strong>
                     {isFigurePlaceholder(option.text) ? (
                       <span className="crt-tag crt-tag-red">FIGURE</span>

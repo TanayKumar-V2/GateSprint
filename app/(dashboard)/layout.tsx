@@ -57,13 +57,13 @@ export default async function DashboardLayout({
               GATE-MENTOR<span className="text-(--crt-red)">_</span>
             </span>
           </Link>
-          <nav aria-label="Study sections" className="flex min-w-0 items-stretch overflow-x-auto">
+          <nav aria-label="Study sections" className="flex min-w-0 flex-1 items-stretch overflow-x-auto">
             <ul className="crt-micro flex items-stretch text-[11px]">
               {NAV.map((item) => (
                 <li key={item.href} className="flex items-stretch">
                   <Link
                     href={item.href}
-                    className="flex items-center gap-2 border-r border-(--crt-line) px-3 py-3 text-(--crt-dim) transition-colors hover:bg-(--crt-ink) hover:text-(--crt-bg) sm:px-5"
+                    className="flex items-center gap-2 whitespace-nowrap border-r border-(--crt-line) px-2.5 py-3 text-(--crt-dim) transition-colors hover:bg-(--crt-ink) hover:text-(--crt-bg) sm:px-5"
                   >
                     [ {item.label} ]
                     <span aria-hidden="true" className="hidden text-[9px] opacity-60 lg:inline">
@@ -74,7 +74,7 @@ export default async function DashboardLayout({
               ))}
             </ul>
           </nav>
-          <div className="flex items-center gap-2 border-l border-(--crt-line) px-3 sm:px-4">
+          <div className="flex shrink-0 items-center gap-2 border-l border-(--crt-line) px-2 sm:px-4">
             <ThemeToggle className="border border-(--crt-line)" />
             {username && user ? (
               <UserMenu
@@ -114,11 +114,11 @@ export default async function DashboardLayout({
             TERMS
           </Link>
         </nav>
-        <div className="mx-auto flex w-full max-w-6xl items-center gap-4 px-4 py-3 sm:px-6">
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 sm:px-6">
           <span className="crt-micro text-[10px] text-(--crt-dim)">
             GATE-MENTOR® {"///"} FIELD MANUAL REV 2.6
           </span>
-          <span aria-hidden="true" className="crt-barcode h-5 flex-1 text-(--crt-line)" />
+          <span aria-hidden="true" className="crt-barcode h-5 min-w-10 flex-1 text-(--crt-line)" />
           <span className="crt-micro text-[10px] text-(--crt-dim)">©2026</span>
         </div>
       </footer>

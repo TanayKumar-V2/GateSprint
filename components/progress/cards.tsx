@@ -51,7 +51,7 @@ export function RecommendationCard({ rec }: { rec: Recommendation }) {
           inline
           className="line-clamp-2 text-sm leading-6 text-(--crt-dim) [&_.katex-display]:hidden"
         />
-        <div className="mt-auto flex flex-wrap gap-2 pt-3">
+        <div className="mt-auto flex flex-col gap-2 pt-3 sm:flex-row sm:flex-wrap">
           <Link
             href={rec.practicePath}
             className="crt-btn-red !px-5 !py-2.5 !text-[11px]"

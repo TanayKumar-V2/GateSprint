@@ -104,7 +104,7 @@ export default async function Home() {
           <p className="crt-micro text-[11px] text-(--crt-red) sm:text-xs">
             [ BOOT-SEQUENCE {"///"} REV 2.6 ] &gt;&gt;&gt; OPERATOR INPUT REQUIRED
           </p>
-          <h1 className="crt-macro crt-phosphor mt-6 text-[clamp(3.2rem,10vw,11rem)] text-(--crt-ink)">
+          <h1 className="crt-macro crt-phosphor mt-6 text-[clamp(2.5rem,10vw,11rem)] text-(--crt-ink)">
             MAKE EVERY
             <br />
             QUESTION{" "}
@@ -153,7 +153,7 @@ export default async function Home() {
         <div className="flex flex-wrap items-end justify-between gap-4 px-4 pb-8 pt-14 sm:px-8">
           <div>
             <p className="crt-micro text-[11px] text-(--crt-red)">[ 01 {"///"} DELIVERY SYSTEMS ]</p>
-            <h2 className="crt-macro mt-3 text-[clamp(2.4rem,6vw,5.5rem)] text-(--crt-ink)">
+            <h2 className="crt-macro mt-3 text-[clamp(2rem,6vw,5.5rem)] text-(--crt-ink)">
               FOUR DOORS.
               <br />
               ONE WORKSPACE.
@@ -192,7 +192,7 @@ export default async function Home() {
         <div className="flex flex-wrap items-end justify-between gap-4 px-4 pb-8 pt-14 sm:px-8">
           <div>
             <p className="crt-micro text-[11px] text-(--crt-red)">[ 02 {"///"} OPERATING PROTOCOL ]</p>
-            <h2 className="crt-macro mt-3 text-[clamp(2.4rem,6vw,5.5rem)] text-(--crt-ink)">
+            <h2 className="crt-macro mt-3 text-[clamp(2rem,6vw,5.5rem)] text-(--crt-ink)">
               ATTEMPT. MISS.
               <br />
               PATCH. RETAIN.
@@ -228,7 +228,7 @@ export default async function Home() {
       <section aria-label="Signal table" className="border-b-2 border-(--crt-ink)">
         <div className="px-4 pb-8 pt-14 sm:px-8">
           <p className="crt-micro text-[11px] text-(--crt-red)">[ 03 {"///"} SIGNAL TABLE ]</p>
-          <h2 className="crt-macro mt-3 text-[clamp(2.4rem,6vw,5.5rem)] text-(--crt-ink)">
+          <h2 className="crt-macro mt-3 text-[clamp(2rem,6vw,5.5rem)] text-(--crt-ink)">
             READ THE BOARD.
           </h2>
         </div>
@@ -274,7 +274,7 @@ export default async function Home() {
         <div aria-hidden="true" className="crt-scanlines pointer-events-none absolute inset-0" />
         <div className="relative px-4 pb-0 pt-16 sm:px-8 sm:pt-24">
           <p className="crt-micro text-[11px] text-(--crt-red)">[ FINAL TRANSMISSION {"///"} AUTH REQUIRED ]</p>
-          <h2 className="crt-macro crt-phosphor mt-4 text-[clamp(3rem,9vw,10rem)] text-(--crt-ink)">
+          <h2 className="crt-macro crt-phosphor mt-4 text-[clamp(2.5rem,9vw,10rem)] text-(--crt-ink)">
             STOP GUESSING.
             <br />
             START <span className="text-(--crt-red) [text-shadow:none]">KNOWING.</span>

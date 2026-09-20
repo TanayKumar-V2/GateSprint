@@ -46,7 +46,7 @@ export default async function PracticePage({
     <div className="flex flex-col gap-6">
       <header>
         <p className="crt-micro text-[11px] text-(--crt-red)">[ 01 {"///"} QUESTION BANK ]</p>
-        <h1 className="crt-macro mt-2 text-[clamp(2.6rem,7vw,5.5rem)] text-(--crt-ink)">
+        <h1 className="crt-macro mt-2 text-[clamp(2.2rem,7vw,5.5rem)] text-(--crt-ink)">
           PRACTICE<span className="text-(--crt-red)">.</span>
         </h1>
         <p className="crt-micro mt-3 text-[11px] text-(--crt-dim)">
@@ -85,7 +85,7 @@ export default async function PracticePage({
       )}
 
       {list.totalPages > 1 ? (
-        <nav aria-label="Pages" className="crt-micro flex items-center gap-3 text-[11px]">
+        <nav aria-label="Pages" className="crt-micro flex flex-wrap items-center gap-3 text-[11px]">
           {list.page > 1 ? (
             <Link
               href={pageHref(list.page - 1)}
