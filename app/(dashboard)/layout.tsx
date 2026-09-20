@@ -3,6 +3,7 @@ import { currentUser, requireUserId } from "@/lib/current-user";
 import { ensureUsername } from "@/lib/profile";
 import { signOut } from "@/lib/auth";
 import { UserMenu } from "@/components/dashboard/user-menu";
+import { MobileNav } from "@/components/dashboard/mobile-nav";
 import { ThemeLogo } from "@/components/theme-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import "katex/dist/katex.min.css";
@@ -57,7 +58,8 @@ export default async function DashboardLayout({
               GATE-MENTOR<span className="text-(--crt-red)">_</span>
             </span>
           </Link>
-          <nav aria-label="Study sections" className="flex min-w-0 flex-1 items-stretch overflow-x-auto">
+          <MobileNav onSignOut={handleSignOut} />
+          <nav aria-label="Study sections" className="hidden min-w-0 flex-1 items-stretch overflow-x-auto sm:flex">
             <ul className="crt-micro flex items-stretch text-[11px]">
               {NAV.map((item) => (
                 <li key={item.href} className="flex items-stretch">

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
@@ -14,38 +14,75 @@ const LINKS = [
 /**
  * Hamburger unit for small screens: the desktop command row hides its
  * center links below `sm`, so this toggle exposes the same destinations
- * as a full-width dropdown panel. Closes on navigation.
+ * as a slide-in side panel. Escape/backdrop closes; body scroll locks
+ * while open.
  */
 export function MobileMenu() {
   const [open, setOpen] = useState(false);
 
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [open ]);
+
   return (
-    <div className="sm:hidden">
+    <div className="flex items-stretch sm:hidden">
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen(true)}
         aria-expanded={open}
-        aria-controls="landing-mobile-menu"
-        aria-label={open ? "Close menu" : "Open menu"}
-        className="crt-micro flex h-full items-center border-l border-(--crt-line) px-4 py-3 text-[13px] font-bold text-(--crt-ink) transition-colors hover:bg-(--crt-ink) hover:text-(--crt-bg)"
+        aria-controls="landing-side-panel"
+        aria-label="Open menu"
+        className="crt-micro flex items-center border-l border-(--crt-line) px-4 py-3 text-[13px] font-bold text-(--crt-ink) transition-colors hover:bg-(--crt-ink) hover:text-(--crt-bg)"
       >
-        {open ? "[ X ]" : "[ = ]"}
+        [ = ]
       </button>
       <div
-        id="landing-mobile-menu"
+        aria-hidden={!open}
+        onClick={() => setOpen(false)}
         className={cn(
-          "absolute inset-x-0 top-full border-b-2 border-(--crt-ink) bg-(--crt-bg)",
-          open ? "block" : "hidden",
+          "fixed inset-0 z-[60] bg-black/70 transition-opacity duration-300",
+          open ? "opacity-100" : "pointer-events-none opacity-0",
+        )}
+      />
+      <div
+        id="landing-side-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu"
+        className={cn(
+          "fixed inset-y-0 right-0 z-[70] flex w-72 max-w-[85vw] flex-col border-l-2 border-(--crt-ink) bg-(--crt-bg) text-(--crt-ink) transition-transform duration-300",
+          open ? "translate-x-0" : "translate-x-full",
         )}
       >
+        <div className="crt-micro flex items-center justify-between border-b border-(--crt-line) px-5 py-3 text-[10px] text-(--crt-dim)">
+          <span>[ NAV {"///"} GATE-MENTOR ]</span>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            aria-label="Close menu"
+            className="border border-(--crt-line) px-2 py-1 text-[11px] text-(--crt-ink) transition-colors hover:border-(--crt-red) hover:bg-(--crt-red) hover:text-(--crt-bg)"
+          >
+            X
+          </button>
+        </div>
         <nav aria-label="Mobile">
-          <ul className="crt-micro flex flex-col text-[12px]">
+          <ul className="crt-micro flex flex-col text-[13px]">
             {LINKS.map((link) => (
-              <li key={link.href} className="border-t border-(--crt-line)">
+              <li key={link.href} className="border-b border-(--crt-line)">
                 <Link
                   href={link.href}
                   onClick={() => setOpen(false)}
-                  className="block px-5 py-3.5 text-(--crt-ink) transition-colors hover:bg-(--crt-red) hover:text-(--crt-bg)"
+                  className="block px-5 py-4 text-(--crt-ink) transition-colors hover:bg-(--crt-red) hover:text-(--crt-bg)"
                 >
                   [ {link.label} ]
                 </Link>
@@ -53,6 +90,9 @@ export function MobileMenu() {
             ))}
           </ul>
         </nav>
+        <p className="crt-micro mt-auto border-t border-(--crt-line) px-5 py-4 text-[10px] text-(--crt-dim)">
+          GATE-MENTOR® {"///"} FIELD MANUAL REV 2.6
+        </p>
       </div>
     </div>
   );

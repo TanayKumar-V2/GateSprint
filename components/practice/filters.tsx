@@ -11,22 +11,41 @@ export type FilterOptions = {
  * Plain GET form: filters live in the URL, so results are shareable and
  * work without JavaScript. Rendered as a filter-array console: bordered
  * compartment, mono labels, square fields, red APPLY block.
+ *
+ * On phones the form hides behind a FILTER toggle (checkbox + peer, so
+ * it still works with JS disabled); on sm+ it is always visible.
  */
 export function PracticeFilters({ options }: { options: FilterOptions }) {
   const { subjects, topics, years, current } = options;
   const uniqueTopics = Array.from(new Map(topics.map((t) => [t.slug, t])).values());
+  const activeCount = Object.entries(current).filter(
+    ([key, value]) => key !== "page" && value !== "",
+  ).length;
   return (
     <div className="border border-(--crt-line) bg-(--crt-bg)">
-      <div className="crt-micro flex items-center justify-between border-b border-(--crt-line) px-4 py-2 text-[10px] text-(--crt-dim) sm:px-5">
+      <input
+        id="filter-array-toggle"
+        type="checkbox"
+        className="peer sr-only"
+      />
+      <div className="crt-micro flex items-center justify-between gap-3 border-b border-(--crt-line) px-4 py-2 text-[10px] text-(--crt-dim) sm:px-5">
         <span>[ FILTER-ARRAY {"///"} QUERY CONSOLE ]</span>
-        <Link href="/practice" className="text-(--crt-ink) underline decoration-(--crt-red) decoration-2 underline-offset-4 hover:text-(--crt-red)">
-          RESET
-        </Link>
+        <span className="flex items-center gap-4">
+          <label
+            htmlFor="filter-array-toggle"
+            className="cursor-pointer text-(--crt-ink) underline decoration-(--crt-red) decoration-2 underline-offset-4 hover:text-(--crt-red) sm:hidden"
+          >
+            {activeCount > 0 ? `[ FILTERS · ${activeCount} ]` : "[ FILTERS ]"}
+          </label>
+          <Link href="/practice" className="text-(--crt-ink) underline decoration-(--crt-red) decoration-2 underline-offset-4 hover:text-(--crt-red)">
+            RESET
+          </Link>
+        </span>
       </div>
       <form
         method="get"
         action="/practice"
-        className="grid gap-4 p-4 sm:grid-cols-3 sm:p-5 lg:grid-cols-4"
+        className="hidden gap-4 p-4 peer-checked:grid sm:grid sm:grid-cols-3 sm:p-5 lg:grid-cols-4"
       >
         <label className="flex flex-col gap-1.5">
           <span className="crt-label">Subject</span>

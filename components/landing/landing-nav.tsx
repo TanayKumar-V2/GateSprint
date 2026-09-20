@@ -29,7 +29,7 @@ export async function LandingNav() {
         <span>UNIT / D-01</span>
       </div>
       {/* Command row */}
-      <nav aria-label="Primary" className="relative grid grid-cols-[1fr_auto] sm:grid-cols-[auto_1fr_auto]">
+      <nav aria-label="Primary" className="grid grid-cols-[1fr_auto] sm:grid-cols-[auto_1fr_auto]">
         <Link
           href="/"
           className="crt-micro flex min-w-0 items-center gap-3 border-r border-(--crt-line) px-3 py-3 text-[12px] font-bold sm:px-6 sm:text-[13px]"
