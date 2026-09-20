@@ -18,4 +18,14 @@ describe("normalizeMathDelimiters", () => {
   it("leaves dollar math untouched", () => {
     assert.equal(normalizeMathDelimiters("a $x^2$ b"), "a $x^2$ b");
   });
+  it("formats un-delimited math and PDF extraction artifacts like n2", () => {
+    assert.equal(
+      normalizeMathDelimiters("given by f(n) = n and g(n) = n2."),
+      "given by f(n) = n and g(n) = $n^2$.",
+    );
+    assert.equal(
+      normalizeMathDelimiters("f∈O(g)"),
+      "$f\\in O(g)$",
+    );
+  });
 });
