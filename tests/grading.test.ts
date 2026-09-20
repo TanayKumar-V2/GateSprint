@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { buildGradePrompt, GRADE_SYSTEM, hasSolution, parseAiGrade, sameCorrectAnswer, type AiGradeSuccess } from "../lib/ai/grade-validation";
+import { buildGradePrompt, GRADE_SYSTEM, hasSolution, parseAiGrade, parseAiGradeDetailed, sameCorrectAnswer, type AiGradeSuccess } from "../lib/ai/grade-validation";
 import { resolveSolutionCache, type SolutionState } from "../lib/ai/solution-cache";
 
 const options = [
@@ -162,6 +162,67 @@ describe("parseAiGrade", () => {
         options,
       ),
       null,
+    );
+  });
+  it("normalizes lowercase option ids and verdicts", () => {
+    assert.deepEqual(
+      parseAiGrade(
+        '{"verdict":"Correct","correctAnswer":{"kind":"mcq","optionId":"b"},"explanation":"6x7 is 42."}',
+        "mcq",
+        options,
+      ),
+      {
+        verdict: "correct",
+        correctAnswer: { kind: "mcq", optionId: "B" },
+        explanation: "6x7 is 42.",
+      },
+    );
+    assert.deepEqual(
+      parseAiGrade(
+        '{"verdict":"correct","correctAnswer":{"kind":"msq","optionIds":["a"," c "]},"explanation":"x"}',
+        "msq",
+        options,
+      ),
+      {
+        verdict: "correct",
+        correctAnswer: { kind: "msq", optionIds: ["A", "C"] },
+        explanation: "x",
+      },
+    );
+  });
+  it("accepts literal newlines and tabs inside the explanation", () => {
+    assert.deepEqual(
+      parseAiGrade(
+        '{"verdict":"correct","correctAnswer":{"kind":"mcq","optionId":"B"},"explanation":"Line one.\nLine two.\tTabbed."}',
+        "mcq",
+        options,
+      ),
+      {
+        verdict: "correct",
+        correctAnswer: { kind: "mcq", optionId: "B" },
+        explanation: "Line one.\nLine two.\tTabbed.",
+      },
+    );
+  });
+  it("reports specific failure reasons", () => {
+    assert.deepEqual(parseAiGradeDetailed("not json at all", "mcq", options), { failure: "no-json-object" });
+    assert.deepEqual(parseAiGradeDetailed('{"verdict":"correct",', "mcq", options), { failure: "no-json-object" });
+    assert.deepEqual(parseAiGradeDetailed('{"verdict":}', "mcq", options), { failure: "invalid-json" });
+    assert.deepEqual(
+      parseAiGradeDetailed(
+        '{"verdict":"maybe","correctAnswer":{"kind":"mcq","optionId":"B"},"explanation":"x"}',
+        "mcq",
+        options,
+      ),
+      { failure: "schema-mismatch" },
+    );
+    assert.deepEqual(
+      parseAiGradeDetailed(
+        '{"verdict":"correct","correctAnswer":{"kind":"mcq","optionId":"E"},"explanation":"x"}',
+        "mcq",
+        options,
+      ),
+      { failure: "unknown-option" },
     );
   });
 });

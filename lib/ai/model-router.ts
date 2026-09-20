@@ -30,6 +30,12 @@ export async function generateImportText(args: {
   system: string;
   prompt: string;
   maxOutputTokens?: number;
+  /**
+   * Pin to one model (single attempt, throws on failure). Used for the
+   * grader's second draw after the primary's output failed validation —
+   * the default path already spent its own fallback, if any.
+   */
+  modelId?: string;
 }): Promise<string> {
   const run = async (modelId: string) => {
     const result = await generateText({
@@ -43,6 +49,7 @@ export async function generateImportText(args: {
     });
     return result.text;
   };
+  if (args.modelId) return run(args.modelId);
   try {
     return await run(primaryModelId());
   } catch (error) {

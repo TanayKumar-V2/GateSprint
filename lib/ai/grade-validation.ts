@@ -110,6 +110,111 @@ export function sanitizeRawJsonLatex(jsonString: string): string {
 }
 
 /**
+ * Escape literal control characters inside JSON string values. Models
+ * often emit real newlines/tabs inside the explanation string, which is
+ * invalid JSON and would otherwise fail the whole parse.
+ */
+export function escapeRawControlChars(jsonString: string): string {
+  let out = "";
+  let inString = false;
+  let escaped = false;
+  for (const ch of jsonString) {
+    if (inString) {
+      if (escaped) {
+        out += ch;
+        escaped = false;
+        continue;
+      }
+      if (ch === "\\") {
+        out += ch;
+        escaped = true;
+        continue;
+      }
+      if (ch === '"') {
+        out += ch;
+        inString = false;
+        continue;
+      }
+      const code = ch.charCodeAt(0);
+      if (code < 0x20) {
+        out +=
+          ch === "\n"
+            ? "\\n"
+            : ch === "\r"
+              ? "\\r"
+              : ch === "\t"
+                ? "\\t"
+                : `\\u${code.toString(16).padStart(4, "0")}`;
+        continue;
+      }
+      out += ch;
+    } else {
+      out += ch;
+      if (ch === '"') inString = true;
+    }
+  }
+  return out;
+}
+
+/**
+ * Validate raw model text into an AiGrade, reporting the failure reason.
+ * The caller treats unusable output as a retryable provider failure.
+ */
+export function parseAiGradeDetailed(
+  text: string,
+  type: GradeQuestionType,
+  options: { id: string; text: string }[] | null,
+): { grade: AiGrade } | { failure: string } {
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start < 0 || end <= start) return { failure: "no-json-object" };
+  let raw: unknown;
+  try {
+    const rawJson = text.slice(start, end + 1);
+    raw = JSON.parse(escapeRawControlChars(sanitizeRawJsonLatex(rawJson))) as unknown;
+  } catch {
+    return { failure: "invalid-json" };
+  }
+  if (!raw || typeof raw !== "object") return { failure: "invalid-json" };
+  const record = raw as Record<string, unknown>;
+  // Models sometimes capitalize the verdict ("Correct") — normalize it.
+  if (typeof record.verdict === "string") record.verdict = record.verdict.trim().toLowerCase();
+  if (record.verdict === "cannot_judge") {
+    const parsed = cannotJudge.safeParse(raw);
+    return parsed.success
+      ? { grade: { verdict: "cannot_judge", explanation: parsed.data.explanation } }
+      : { failure: "bad-cannot-judge" };
+  }
+
+  const answerRecord = record.correctAnswer as Record<string, unknown> | undefined;
+  // Models sometimes return lowercase ids ("b") — normalize to the
+  // uppercase option ids the bank uses before validating.
+  if (answerRecord && typeof answerRecord === "object") {
+    if (typeof answerRecord.optionId === "string") {
+      answerRecord.optionId = answerRecord.optionId.trim().toUpperCase();
+    }
+    if (Array.isArray(answerRecord.optionIds)) {
+      answerRecord.optionIds = answerRecord.optionIds.map((id) =>
+        typeof id === "string" ? id.trim().toUpperCase() : id,
+      );
+    }
+  }
+  const actualKind = typeof answerRecord?.kind === "string" ? answerRecord.kind : type;
+  const schema = actualKind === "mcq" ? mcqGrade : actualKind === "msq" ? msqGrade : natGrade;
+
+  const parsed = schema.safeParse(raw);
+  if (!parsed.success) return { failure: "schema-mismatch" };
+  const data = parsed.data;
+  const correctAnswer: CorrectAnswer =
+    data.correctAnswer.kind === "nat"
+      ? { kind: "nat", value: data.correctAnswer.value, tolerance: data.correctAnswer.tolerance ?? 0 }
+      : (data.correctAnswer as CorrectAnswer);
+  // The model's answer must point at real options, never invent new ones.
+  if (!answerMatchesOptions(correctAnswer, options)) return { failure: "unknown-option" };
+  return { grade: { verdict: data.verdict, correctAnswer, explanation: data.explanation } };
+}
+
+/**
  * Validate raw model text into an AiGrade. Returns null when the output is
  * unusable (caller treats that as a retryable provider failure).
  */
@@ -118,35 +223,6 @@ export function parseAiGrade(
   type: GradeQuestionType,
   options: { id: string; text: string }[] | null,
 ): AiGrade | null {
-  const start = text.indexOf("{");
-  const end = text.lastIndexOf("}");
-  if (start < 0 || end <= start) return null;
-  let raw: unknown;
-  try {
-    const rawJson = text.slice(start, end + 1);
-    raw = JSON.parse(sanitizeRawJsonLatex(rawJson)) as unknown;
-  } catch {
-    return null;
-  }
-  if (!raw || typeof raw !== "object") return null;
-  const record = raw as Record<string, unknown>;
-  if (record.verdict === "cannot_judge") {
-    const parsed = cannotJudge.safeParse(raw);
-    return parsed.success ? { verdict: "cannot_judge", explanation: parsed.data.explanation } : null;
-  }
-  
-  const answerRecord = record.correctAnswer as Record<string, unknown> | undefined;
-  const actualKind = typeof answerRecord?.kind === "string" ? answerRecord.kind : type;
-  const schema = actualKind === "mcq" ? mcqGrade : actualKind === "msq" ? msqGrade : natGrade;
-  
-  const parsed = schema.safeParse(raw);
-  if (!parsed.success) return null;
-  const data = parsed.data;
-  const correctAnswer: CorrectAnswer =
-    data.correctAnswer.kind === "nat"
-      ? { kind: "nat", value: data.correctAnswer.value, tolerance: data.correctAnswer.tolerance ?? 0 }
-      : (data.correctAnswer as CorrectAnswer);
-  // The model's answer must point at real options, never invent new ones.
-  if (!answerMatchesOptions(correctAnswer, options)) return null;
-  return { verdict: data.verdict, correctAnswer, explanation: data.explanation };
+  const result = parseAiGradeDetailed(text, type, options);
+  return "grade" in result ? result.grade : null;
 }
