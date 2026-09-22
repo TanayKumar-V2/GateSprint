@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "About Us",
   description:
-    "What GATE Mentor is, who operates it, and why it exists: focused GATE CS/IT preparation through previous-year questions and an AI tutor.",
+    "What Gate Sprint is, who operates it, and why it exists: focused GATE CS/IT preparation through previous-year questions and an AI tutor.",
 };
 
 export default function AboutPage() {
@@ -35,7 +35,7 @@ export default function AboutPage() {
           [ 01 {"///"} MISSION ]
         </h2>
         <p className="prose-study mt-3 text-[15px] leading-7 text-(--crt-ink)">
-          GATE Mentor exists for a single purpose: serious GATE Computer
+          Gate Sprint exists for a single purpose: serious GATE Computer
           Science and IT preparation. No sprawling course catalog, no trial
           tiers, no noise — just previous-year questions organized by
           subject, topic, year, and difficulty, with every attempt validated
@@ -65,7 +65,7 @@ export default function AboutPage() {
           [ 03 {"///"} OPERATOR ]
         </h2>
         <p className="prose-study mt-3 text-[15px] leading-7 text-(--crt-ink)">
-          GATE Mentor is operated by Axiom Learning Systems, a small
+          Gate Sprint is operated by Axiom Learning Systems, a small
           education technology outfit based in Bengaluru, India, founded in
           2024 by two former GATE rank-holders and one systems engineer. The
           entire question bank is curated and verified by hand; the Mentor is
@@ -82,7 +82,7 @@ export default function AboutPage() {
       </section>
       <div className="flex items-center gap-4 border border-(--crt-line) bg-(--crt-bg) px-4 py-3 sm:px-5">
         <span className="crt-micro text-[10px] text-(--crt-dim)">
-          GATE-MENTOR® {"///"} END OF FILE
+          GATE-SPRINT® {"///"} END OF FILE
         </span>
         <span aria-hidden="true" className="crt-barcode h-5 flex-1 text-(--crt-line)" />
         <span className="crt-micro text-[10px] text-(--crt-dim)">©2026</span>

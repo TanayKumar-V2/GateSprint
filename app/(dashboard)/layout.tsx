@@ -13,6 +13,12 @@ const NAV = [
   { href: "/mentor", label: "MENTOR", code: "D-02" },
   { href: "/progress", label: "PROGRESS", code: "D-03" },
   { href: "/bookmarks", label: "SAVED", code: "D-04" },
+  { href: "/mistakes", label: "MISTAKES", code: "D-05" },
+  { href: "/revision", label: "REVISION", code: "D-06" },
+  { href: "/syllabus", label: "SYLLABUS", code: "D-07" },
+  { href: "/mocks", label: "MOCKS", code: "D-08" },
+  { href: "/trends", label: "TRENDS", code: "D-09" },
+  { href: "/sheets", label: "SHEETS", code: "D-10" },
 ];
 
 export default async function DashboardLayout({
@@ -51,11 +57,11 @@ export default async function DashboardLayout({
           <Link
             href="/"
             className="crt-micro flex items-center gap-2.5 border-r border-(--crt-line) px-4 py-3 text-[12px] font-bold sm:px-5"
-            aria-label="GATE Mentor home"
+            aria-label="Gate Sprint home"
           >
             <ThemeLogo />
             <span className="hidden sm:inline">
-              GATE-MENTOR<span className="text-(--crt-red)">_</span>
+              GATE-SPRINT<span className="text-(--crt-red)">_</span>
             </span>
           </Link>
           <MobileNav onSignOut={handleSignOut} />
@@ -118,7 +124,7 @@ export default async function DashboardLayout({
         </nav>
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 sm:px-6">
           <span className="crt-micro text-[10px] text-(--crt-dim)">
-            GATE-MENTOR® {"///"} FIELD MANUAL REV 2.6
+            GATE-SPRINT® {"///"} FIELD MANUAL REV 2.6
           </span>
           <span aria-hidden="true" className="crt-barcode h-5 min-w-10 flex-1 text-(--crt-line)" />
           <span className="crt-micro text-[10px] text-(--crt-dim)">©2026</span>

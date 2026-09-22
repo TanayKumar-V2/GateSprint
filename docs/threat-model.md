@@ -1,4 +1,4 @@
-# Threat Model — GATE Mentor (Phase 0, lightweight)
+# Threat Model — Gate Sprint (Phase 0, lightweight)
 
 ## Scope
 Practice (PYQ browse/solve), Mentor (streaming chat + bridge), progress/bookmarks, Auth.js Google, Postgres (Neon/local), Redis limiter (Upstash/local), Groq `gpt-oss-20b` → `gpt-oss-120b` fallback, Vercel deploy + Docker image.

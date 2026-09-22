@@ -21,8 +21,8 @@ const siteUrl =
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "GATE Mentor — Practice GATE CS/IT PYQs with an AI Tutor",
-    template: "%s · GATE Mentor",
+    default: "Gate Sprint — Practice GATE CS/IT PYQs with an AI Tutor",
+    template: "%s · Gate Sprint",
   },
   description:
     "Crack GATE Computer Science: practice previous-year questions by subject, topic, year, and difficulty with server-validated attempts, accuracy analytics, and a Mentor that explains every miss step by step.",
@@ -41,21 +41,21 @@ export const metadata: Metadata = {
     "computer networks GATE",
     "theory of computation GATE",
   ],
-  authors: [{ name: "GATE Mentor" }],
-  creator: "GATE Mentor",
+  authors: [{ name: "Gate Sprint" }],
+  creator: "Gate Sprint",
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     locale: "en_IN",
     url: "/",
-    siteName: "GATE Mentor",
-    title: "GATE Mentor — Practice GATE CS/IT PYQs with an AI Tutor",
+    siteName: "Gate Sprint",
+    title: "Gate Sprint — Practice GATE CS/IT PYQs with an AI Tutor",
     description:
       "Previous-year GATE CS questions, step-by-step Mentor explanations, and accuracy analytics built from your real attempts.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "GATE Mentor — Practice GATE CS/IT PYQs with an AI Tutor",
+    title: "Gate Sprint — Practice GATE CS/IT PYQs with an AI Tutor",
     description:
       "Previous-year GATE CS questions, step-by-step Mentor explanations, and accuracy analytics built from your real attempts.",
   },

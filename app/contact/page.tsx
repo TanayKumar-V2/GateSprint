@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Contact Us",
   description:
-    "Reach GATE Mentor: support email, phone, postal address, and response times.",
+    "Reach Gate Sprint: support email, phone, postal address, and response times.",
 };
 
 const CHANNELS = [
@@ -84,7 +84,7 @@ export default function ContactPage() {
       </p>
       <div className="flex items-center gap-4 border border-(--crt-line) bg-(--crt-bg) px-4 py-3 sm:px-5">
         <span className="crt-micro text-[10px] text-(--crt-dim)">
-          GATE-MENTOR® {"///"} END OF FILE
+          GATE-SPRINT® {"///"} END OF FILE
         </span>
         <span aria-hidden="true" className="crt-barcode h-5 flex-1 text-(--crt-line)" />
         <span className="crt-micro text-[10px] text-(--crt-dim)">©2026</span>

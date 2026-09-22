@@ -1,4 +1,4 @@
-# Deploying GATE Mentor
+# Deploying Gate Sprint
 
 Target: Vercel (app) + Neon (Postgres) + Upstash (Redis). Docker covers
 local dev, CI, and the optional container deploy — not daily production.

@@ -1,4 +1,4 @@
-# GATE Mentor — multi-stage production image (Phase 1).
+# Gate Sprint — multi-stage production image (Phase 1).
 # No secrets in layers: only lockfile install + standalone build output runs.
 FROM node:24-bookworm-slim AS deps
 WORKDIR /app

@@ -71,6 +71,41 @@
       "when": 1789672415047,
       "tag": "0009_password-auth",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790020738593,
+      "tag": "0010_mistakes-revision",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1790021449016,
+      "tag": "0011_syllabus-overrides",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1790021992463,
+      "tag": "0012_mocks-builder",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1790022709570,
+      "tag": "0013_sheets",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1790023201293,
+      "tag": "0014_variants",
+      "breakpoints": true
     }
   ]
 }

@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Cookie Policy",
-  description: "Which cookies GATE Mentor uses and why — no advertising trackers.",
+  description: "Which cookies Gate Sprint uses and why — no advertising trackers.",
 };
 
 export default function CookiesPage() {
@@ -65,7 +65,7 @@ export default function CookiesPage() {
           Blocking all cookies in your browser will sign you out — the
           workspace requires its session cookie to function. Theme-only
           browsing of the landing and legal pages works without any
-          GATE Mentor cookie at all. Questions:{" "}
+          Gate Sprint cookie at all. Questions:{" "}
           <Link
             href="/contact"
             className="font-medium text-(--crt-red) underline underline-offset-4"
@@ -77,7 +77,7 @@ export default function CookiesPage() {
       </section>
       <div className="flex items-center gap-4 border border-(--crt-line) bg-(--crt-bg) px-4 py-3 sm:px-5">
         <span className="crt-micro text-[10px] text-(--crt-dim)">
-          GATE-MENTOR® {"///"} END OF FILE
+          GATE-SPRINT® {"///"} END OF FILE
         </span>
         <span aria-hidden="true" className="crt-barcode h-5 flex-1 text-(--crt-line)" />
         <span className="crt-micro text-[10px] text-(--crt-dim)">©2026</span>

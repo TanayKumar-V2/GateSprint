@@ -33,6 +33,13 @@ export const generationStatusEnum = pgEnum("generation_status", [
   "interrupted",
   "failed",
 ]);
+export const mistakeTagEnum = pgEnum("mistake_tag", [
+  "concept_gap",
+  "silly_mistake",
+  "trap",
+  "time_pressure",
+  "unattempted",
+]);
 
 /* ---------- Structured answer shapes ----------
    MSQ answers are always arrays of option ids — never comma strings.
@@ -308,6 +315,202 @@ export const chatMessages = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (t) => [index("chat_messages_session_created_idx").on(t.sessionId, t.createdAt)],
+);
+
+/* ---------- Mistake book (derived from incorrect attempts) ----------
+   One row per (user, question). Upserted on every incorrect attempt —
+   never created by hand. Correct attempts never auto-resolve; the UI
+   only suggests resolving after two correct re-attempts in a row. */
+
+export const mistakes = pgTable(
+  "mistakes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    questionId: uuid("question_id")
+      .notNull()
+      .references(() => questions.id, { onDelete: "cascade" }),
+    tag: mistakeTagEnum("tag"),
+    missCount: integer("miss_count").notNull().default(1),
+    lastMissedAt: timestamp("last_missed_at").defaultNow().notNull(),
+    resolved: boolean("resolved").notNull().default(false),
+    resolvedAt: timestamp("resolved_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => [
+    unique("mistakes_user_question_unique").on(t.userId, t.questionId),
+    index("mistakes_user_resolved_missed_idx").on(
+      t.userId,
+      t.resolved,
+      t.lastMissedAt,
+    ),
+  ],
+);
+
+/* ---------- Syllabus overrides (display-only focus/skip markers) ----------
+   Derived readiness never changes: overrides only add a badge. Stats
+   always come from attempts, so an override can't pollute accuracy. */
+
+export const topicOverrideEnum = pgEnum("topic_override", ["skipped", "focus"]);
+export const mockTypeEnum = pgEnum("mock_type", ["full", "sectional", "pyq_year"]);
+export const mockStatusEnum = pgEnum("mock_status", [
+  "in_progress",
+  "submitted",
+  "expired",
+  "abandoned",
+]);
+
+export const topicOverrides = pgTable(
+  "topic_overrides",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    topicId: uuid("topic_id")
+      .notNull()
+      .references(() => topics.id, { onDelete: "cascade" }),
+    status: topicOverrideEnum("status").notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => [
+    unique("topic_overrides_user_topic_unique").on(t.userId, t.topicId),
+    index("topic_overrides_user_idx").on(t.userId),
+  ],
+);
+
+/* ---------- Timed mocks (exam simulation over keyed questions) ----------
+   Sessions snapshot their question set in config so the paper never shifts
+   under the student. Only questions WITH a cached correctAnswer are picked:
+   grading must be instant mid-exam, never an AI call. Practice attempts
+   grow that keyed pool (first attempt AI-grades and caches the key). */
+
+export type MockSessionConfig = {
+  mode: "full" | "custom" | "pyq";
+  subjectSlugs?: string[];
+  topicSlugs?: string[];
+  year?: number;
+  difficulty?: "easy" | "medium" | "hard";
+  type?: "mcq" | "msq" | "nat";
+  timePolicy?: { durationSeconds: number; suggested: boolean };
+  seed?: number;
+  questionIds: string[];
+};
+
+export const mockSessions = pgTable(
+  "mock_sessions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: mockTypeEnum("type").notNull(),
+    title: text("title").notNull(),
+    totalMarks: real("total_marks").notNull().default(0),
+    durationSeconds: integer("duration_seconds").notNull(),
+    startedAt: timestamp("started_at").defaultNow().notNull(),
+    endsAt: timestamp("ends_at").notNull(),
+    submittedAt: timestamp("submitted_at"),
+    status: mockStatusEnum("status").notNull().default("in_progress"),
+    config: jsonb("config").$type<MockSessionConfig>(),
+    score: real("score"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => [index("mock_sessions_user_created_idx").on(t.userId, t.createdAt)],
+);
+
+/* ---------- Formula / one-shot sheets (admin-curated, human-reviewed) ----------
+   Sheets are curated revision notes per topic — never auto-published AI
+   output. sheetRevisions records one "revised" tick per user/sheet/day
+   (the `day` UTC column enforces it; equivalent to a date() unique). */
+
+export const sheets = pgTable(
+  "sheets",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    topicId: uuid("topic_id")
+      .notNull()
+      .references(() => topics.id, { onDelete: "cascade" })
+      .unique(),
+    contentMd: text("content_md").notNull(),
+    version: integer("version").notNull().default(1),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    updatedBy: text("updated_by"),
+  },
+  (t) => [index("sheets_topic_idx").on(t.topicId)],
+);
+
+export const sheetRevisions = pgTable(  "sheet_revisions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    sheetId: uuid("sheet_id")
+      .notNull()
+      .references(() => sheets.id, { onDelete: "cascade" }),
+    revisedAt: timestamp("revised_at").defaultNow().notNull(),
+    day: text("day").notNull(),
+  },
+  (t) => [
+    unique("sheet_revisions_user_sheet_day_unique").on(t.userId, t.sheetId, t.day),
+    index("sheet_revisions_user_idx").on(t.userId),
+  ],
+);
+
+/* ---------- AI-generated variant questions (Mentor "Quiz me") ----------
+   Ephemeral practice spun off a chat session — marked AI-generated and
+   unreviewed until a correct grading path verifies them. Never shown with
+   answers in list payloads. Admins may promote vetted rows to the bank. */
+
+export const generatedQuestions = pgTable(
+  "generated_questions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    sessionId: uuid("session_id")
+      .notNull()
+      .references(() => chatSessions.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    prompt: text("prompt").notNull(),
+    type: questionTypeEnum("type").notNull(),
+    options: jsonb("options").$type<QuestionOption[] | null>(),
+    correctAnswer: jsonb("correct_answer").$type<CorrectAnswer>().notNull(),
+    difficulty: difficultyEnum("difficulty").notNull().default("medium"),
+    topicId: uuid("topic_id").references(() => topics.id, { onDelete: "set null" }),
+    verified: boolean("verified").notNull().default(false),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [index("generated_questions_session_created_idx").on(t.sessionId, t.createdAt)],
+);
+
+export const mockSessionItems = pgTable(  "mock_session_items",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    sessionId: uuid("session_id")
+      .notNull()
+      .references(() => mockSessions.id, { onDelete: "cascade" }),
+    questionId: uuid("question_id")
+      .notNull()
+      .references(() => questions.id, { onDelete: "restrict" }),
+    position: integer("position").notNull(),
+    /** unvisited | unanswered | answered | marked | answered_marked */
+    status: text("status").notNull().default("unanswered"),
+    selectedAnswer: jsonb("selected_answer"),
+    isCorrect: boolean("is_correct"),
+    timeTakenSeconds: integer("time_taken_seconds").notNull().default(0),
+    markedForReview: boolean("marked_for_review").notNull().default(false),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => [
+    index("mock_session_items_session_position_idx").on(t.sessionId, t.position),
+    unique("mock_session_items_session_question_unique").on(t.sessionId, t.questionId),
+  ],
 );
 
 /* ---------- Relations ---------- */

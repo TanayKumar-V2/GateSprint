@@ -1,4 +1,4 @@
-# ADR-001 — Phase 0 Technical Baseline (GATE Mentor)
+# ADR-001 — Phase 0 Technical Baseline (Gate Sprint)
 
 Date: 2026-09-11
 Status: Accepted for Phase 1 scaffolding
@@ -7,7 +7,7 @@ Repo state: Empty except `plan.md`. No package.json, no lockfile, no Docker/CI.
 ## Environment verified
 
 - Node v24.19.0, npm 11.17.0, git 2.55.0, Docker 29.7.2, Compose v5.5.0
-- Workdir `C:\Tanay\gate-mentor`, not yet a git repo (init in Phase 1)
+- Workdir `C:\Tanay\gate-sprint`, not yet a git repo (init in Phase 1)
 
 ## Decisions
 

@@ -212,7 +212,7 @@
   }
 }
 
-/* GATE Mentor brand layer: graphite, paper, and one saffron action color. */
+/* Gate Sprint brand layer: graphite, paper, and one saffron action color. */
 :root {
   --brand-ink: oklch(0.22 0.04 260);
   --brand-saffron: oklch(0.72 0.16 72);

@@ -65,7 +65,7 @@ export function MobileMenu() {
         )}
       >
         <div className="crt-micro flex items-center justify-between border-b border-(--crt-line) px-5 py-3 text-[10px] text-(--crt-dim)">
-          <span>[ NAV {"///"} GATE-MENTOR ]</span>
+          <span>[ NAV {"///"} GATE-SPRINT ]</span>
           <button
             type="button"
             onClick={() => setOpen(false)}
@@ -91,7 +91,7 @@ export function MobileMenu() {
           </ul>
         </nav>
         <p className="crt-micro mt-auto border-t border-(--crt-line) px-5 py-4 text-[10px] text-(--crt-dim)">
-          GATE-MENTOR® {"///"} FIELD MANUAL REV 2.6
+          GATE-SPRINT® {"///"} FIELD MANUAL REV 2.6
         </p>
       </div>
     </div>

@@ -96,7 +96,7 @@ function SessionList({ sessions }: { sessions: SidebarSession[] }) {
                 className={cn(
                   "crt-micro min-w-0 flex-1 truncate px-3 py-2.5 text-[11px] transition-colors",
                   active
-                    ? "border-l-4 border-l-(--crt-red) bg-(--crt-raised) font-bold text-(--crt-ink)"
+                    ? "bg-(--crt-raised) font-bold text-(--crt-ink)"
                     : "text-(--crt-dim) hover:bg-(--crt-ink) hover:text-(--crt-bg)",
                 )}
               >

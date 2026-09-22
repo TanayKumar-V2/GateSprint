@@ -1,4 +1,4 @@
-# Running GATE Mentor
+# Running Gate Sprint
 
 ## Backups
 

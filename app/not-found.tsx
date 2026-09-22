@@ -70,7 +70,7 @@ export default function NotFound() {
       </nav>
       <div className="mt-auto flex items-center gap-4 pt-10">
         <span className="crt-micro text-[10px] text-(--crt-dim)">
-          GATE-MENTOR® {"///"} END OF SIGNAL
+          GATE-SPRINT® {"///"} END OF SIGNAL
         </span>
         <span aria-hidden="true" className="crt-barcode h-5 flex-1 text-(--crt-line)" />
         <span className="crt-micro text-[10px] text-(--crt-dim)">©2026</span>

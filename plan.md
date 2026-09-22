@@ -1,10 +1,10 @@
-# GATE Mentor — Master Build Plan and Implementation Prompt
+# Gate Sprint — Master Build Plan and Implementation Prompt
 
 ## How to use this document
 
 This file is both:
 
-1. The product and engineering plan for GATE Mentor.
+1. The product and engineering plan for Gate Sprint.
 2. A master prompt that can be given to an experienced coding agent to build the application.
 
 The build must be completed in phases. The agent must finish one phase, report what changed and how it was verified, then stop and wait for an explicit approval such as `GO`, `continue`, or `start the next phase`. It must never continue automatically into the next phase.
@@ -17,11 +17,11 @@ The agent should make reasonable technical decisions within the scope of this do
 
 ## 1. Product name
 
-**GATE Mentor**
+**Gate Sprint**
 
 ## 2. Product summary
 
-GATE Mentor is a focused preparation platform for GATE Computer Science and Information Technology aspirants. It combines:
+Gate Sprint is a focused preparation platform for GATE Computer Science and Information Technology aspirants. It combines:
 
 - **Practice Mode:** subject- and topic-wise Previous Year Questions (PYQs), attempts, solutions, bookmarks, and progress tracking.
 - **Mentor Mode:** a persistent AI tutor that explains concepts step by step, diagnoses misconceptions, renders mathematics and code clearly, and remembers chat sessions.
@@ -505,7 +505,7 @@ Use `openai/gpt-oss-20b` as the primary Mentor model and `openai/gpt-oss-120b` a
 
 1. Attempt the primary model first for every eligible Mentor generation.
 2. Fall back to `openai/gpt-oss-120b` only when the primary model is unavailable because of a model-not-found response, provider outage, provider overload, transient provider `5xx`, or a provider timeout.
-3. A provider rate-limit response may use the fallback only when the fallback has an independent available quota; it must not bypass GATE Mentor's own per-user or per-IP limits.
+3. A provider rate-limit response may use the fallback only when the fallback has an independent available quota; it must not bypass Gate Sprint's own per-user or per-IP limits.
 4. Do not fall back for invalid input, authentication failure, authorization failure, prompt validation failure, or application/database bugs. Those errors must be returned clearly and safely.
 5. Retry at most once per generation. Do not create a retry loop that multiplies provider cost.
 6. Preserve the original user message exactly once. Persist the completed assistant response with `modelUsed` and a fallback-used flag or equivalent metadata.
@@ -712,7 +712,7 @@ Add an alerting path for sustained AI abuse, unusual cost spikes, Redis failures
 Use this as the starting point for the production Mentor system prompt. Keep it in a versioned server-side file rather than scattering it across route code.
 
 ```text
-You are GATE Mentor, an expert tutor for students preparing for the GATE Computer Science and Information Technology examination.
+You are Gate Sprint, an expert tutor for students preparing for the GATE Computer Science and Information Technology examination.
 
 You have deep, practical expertise in algorithms, data structures, programming, discrete mathematics, engineering mathematics, digital logic, computer organization and architecture, theory of computation, compiler design, operating systems, databases, and computer networks. You are also an experienced teacher. Your job is not merely to state the correct answer; your job is to make the student's reasoning stronger.
 
@@ -1012,7 +1012,7 @@ If external credentials are unavailable, provide deterministic mocks and documen
 
 ## 23. SEO and organic discoverability requirements
 
-SEO is a product requirement, not a final metadata pass. GATE Mentor must be discoverable for useful GATE CS/IT preparation searches while keeping private student data, chat sessions, and personalized analytics out of search engines.
+SEO is a product requirement, not a final metadata pass. Gate Sprint must be discoverable for useful GATE CS/IT preparation searches while keeping private student data, chat sessions, and personalized analytics out of search engines.
 
 ### Search intent and content positioning
 
@@ -1472,11 +1472,11 @@ Report final checks, remaining limitations, and deployment steps. Stop and wait 
 The following is the copy-pasteable master prompt for the implementation agent.
 
 ```text
-You are the lead product engineer and technical architect for GATE Mentor, a production-quality learning platform for GATE CS/IT aspirants. You have extensive experience building TypeScript applications with Next.js App Router, React, Tailwind, shadcn/ui, PostgreSQL, Drizzle ORM, Auth.js, Vercel AI SDK, streamed LLM interfaces, secure multi-tenant APIs, and educational products.
+You are the lead product engineer and technical architect for Gate Sprint, a production-quality learning platform for GATE CS/IT aspirants. You have extensive experience building TypeScript applications with Next.js App Router, React, Tailwind, shadcn/ui, PostgreSQL, Drizzle ORM, Auth.js, Vercel AI SDK, streamed LLM interfaces, secure multi-tenant APIs, and educational products.
 
 Your standard is expert-level engineering: deliberate architecture, strong typing, secure server boundaries, accessible UI, clear UX, maintainable components, tested domain logic, and careful verification. You are also an experienced learning-product designer. Optimize for a student's understanding and momentum, not for flashy features or the largest possible code diff.
 
-You are building GATE Mentor according to the complete requirements in `plan.md`.
+You are building Gate Sprint according to the complete requirements in `plan.md`.
 
 NON-NEGOTIABLE WORKFLOW:
 

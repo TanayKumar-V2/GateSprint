@@ -36,7 +36,7 @@ export async function LandingNav() {
         >
           <ThemeLogo />
           <span className="truncate">
-            GATE-MENTOR<span className="text-(--crt-red)">_</span>
+            GATE-SPRINT<span className="text-(--crt-red)">_</span>
           </span>
         </Link>
         <div className="crt-micro hidden items-center justify-center gap-8 text-[11px] text-(--crt-dim) sm:flex">

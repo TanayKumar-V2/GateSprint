@@ -1,4 +1,4 @@
-# GATE Mentor
+# Gate Sprint
 
 Focused GATE CS/IT preparation: PYQ practice with server-validated attempts,
 plus a persistent Mentor that explains concepts step by step.
@@ -38,8 +38,8 @@ npm run start       # serve production build
 docker compose up --build            # app + postgres + redis (dev)
 docker compose down -v               # reset named volumes (dev data loss)
 docker compose -f docker-compose.test.yml up --build --abort-on-container-exit
-docker build -t gate-mentor:phase1 .
-docker run --rm -p 3000:3000 gate-mentor:phase1
+docker build -t gate-sprint:phase1 .
+docker run --rm -p 3000:3000 gate-sprint:phase1
 ```
 
 Health: `GET /api/health` returns `{ status: "ok" }` with `no-store`.

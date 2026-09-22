@@ -4,6 +4,11 @@ import { memo, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChatMessageBody } from "./message";
 import { readUIChunks } from "./stream";
+import {
+  EXPLAIN_VARIANT,
+  notifyVariantsUpdated,
+  requestVariantSet,
+} from "../variants/variant-client";
 
 export type ThreadMessage = {
   id: string;
@@ -92,6 +97,10 @@ export function ChatThread({
   async function send(text: string, opts: { appendUser: boolean }) {
     const trimmed = text.trim();
     if (!trimmed || streaming) return;
+    if (trimmed.toLowerCase() === "/quiz" || trimmed.toLowerCase().startsWith("/quiz ")) {
+      await sendQuiz(trimmed);
+      return;
+    }
     setError(null);
     if (opts.appendUser) {
       setMessages((m) => [...m, { id: newId(), role: "user", content: trimmed }]);
@@ -155,6 +164,39 @@ export function ChatThread({
     }
   }
 
+  /**
+   * /quiz command: generate variants through the variants endpoint instead
+   * of the chat stream. The set counts against chat budgets server-side;
+   * the cards render in the practice panel below.
+   */
+  async function sendQuiz(text: string) {
+    if (streaming) return;
+    setError(null);
+    setMessages((m) => [...m, { id: newId(), role: "user", content: text }]);
+    setStreaming(true);
+    try {
+      const result = await requestVariantSet(sessionId);
+      if (result.ok) {
+        setMessages((m) => [
+          ...m,
+          {
+            id: newId(),
+            role: "assistant",
+            content: `Generated ${result.count} practice ${result.count === 1 ? "question" : "questions"} — try them in the practice panel below. Answers stay hidden until you check.`,
+          },
+        ]);
+        notifyVariantsUpdated();
+      } else {
+        setError(result.message);
+      }
+    } catch {
+      setError("Couldn't generate variants. Try again.");
+    } finally {
+      setStreaming(false);
+      router.refresh();
+    }
+  }
+
   // Suggestion entry: send once, even under StrictMode remounts.
   useEffect(() => {
     if (autoSend && !autoSentRef.current && messages.length === 0) {
@@ -163,6 +205,20 @@ export function ChatThread({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoSend]);
+
+  // Variant cards ask the thread to explain via event (decoupled siblings).
+  const sendRef = useRef(send);
+  useEffect(() => {
+    sendRef.current = send;
+    const onExplain = (e: Event) => {
+      const text = (e as CustomEvent<string>).detail;
+      if (typeof text === "string" && text.trim()) {
+        void sendRef.current(text, { appendUser: true });
+      }
+    };
+    window.addEventListener(EXPLAIN_VARIANT, onExplain);
+    return () => window.removeEventListener(EXPLAIN_VARIANT, onExplain);
+  });
 
   const lastUser = [...messages].reverse().find((m) => m.role === "user");
 

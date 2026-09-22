@@ -3,14 +3,14 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
-  description: "The rules for using GATE Mentor: accounts, acceptable use, and AI content.",
+  description: "The rules for using Gate Sprint: accounts, acceptable use, and AI content.",
 };
 
 const SECTIONS: { heading: string; body: string[] }[] = [
   {
     heading: "[ 01 /// THE SERVICE ]",
     body: [
-      "GATE Mentor provides previous-year GATE CS/IT practice questions, server-validated attempts, progress analytics, and an AI tutor. Features evolve; placeholders in the product are exactly that — not promises.",
+      "Gate Sprint provides previous-year GATE CS/IT practice questions, server-validated attempts, progress analytics, and an AI tutor. Features evolve; placeholders in the product are exactly that — not promises.",
     ],
   },
   {
@@ -79,7 +79,7 @@ export default function TermsPage() {
       ))}
       <div className="flex items-center gap-4 border border-(--crt-line) bg-(--crt-bg) px-4 py-3 sm:px-5">
         <span className="crt-micro text-[10px] text-(--crt-dim)">
-          GATE-MENTOR® {"///"} END OF FILE
+          GATE-SPRINT® {"///"} END OF FILE
         </span>
         <span aria-hidden="true" className="crt-barcode h-5 flex-1 text-(--crt-line)" />
         <span className="crt-micro text-[10px] text-(--crt-dim)">©2026</span>

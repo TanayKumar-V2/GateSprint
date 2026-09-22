@@ -35,7 +35,7 @@ export function IslandCta({
         aria-hidden="true"
         className={cn(
           "flex size-8 items-center justify-center rounded-full transition-[translate,scale] duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:scale-105",
-          variant === "primary" ? "bg-black/10 dark:bg-white/15" : "bg-muted",
+          variant === "primary" ? "bg-primary-foreground/15" : "bg-muted",
         )}
       >
         <ArrowUpRight className="size-4" strokeWidth={1.5} />

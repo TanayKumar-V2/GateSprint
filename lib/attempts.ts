@@ -9,6 +9,7 @@ import {
   type SubmittedAnswer,
 } from "./validation/answers";
 import { ensureQuestionSolution, readSolution } from "./solutions";
+import { recordMiss } from "./mistakes";
 
 export type GradedAttempt = {
   attemptId: string;
@@ -161,6 +162,7 @@ export async function submitAttempt(
           startedAt: input.startedAt ? new Date(input.startedAt) : null,
         })
         .returning();
+      if (!isCorrect) await trackMiss(userId, question.id);
       return toGraded(inserted[0]!, question.id, false, { aiGraded, explanation });
     } catch {
       // Lost a race with an identical retry: return the winner.
@@ -213,7 +215,17 @@ export async function submitAttempt(
       startedAt: input.startedAt ? new Date(input.startedAt) : null,
     })
     .returning();
+  if (!isCorrect) await trackMiss(userId, question.id);
   return toGraded(inserted[0]!, question.id, false, { aiGraded, explanation });
+}
+
+async function trackMiss(userId: string, questionId: string) {
+  try {
+    await recordMiss(userId, questionId);
+  } catch (error) {
+    // Mistake-book is derived state: never fail the attempt for it.
+    console.error("recordMiss failed:", error instanceof Error ? error.message : error);
+  }
 }
 
 async function toGraded(

@@ -7,6 +7,7 @@ import {
   getSessionSourceInfo,
 } from "@/lib/chat";
 import { ChatThread } from "@/components/chat/chat-thread";
+import { VariantSection } from "@/components/variants/variant-section";
 
 export default async function SessionPage({
   params,
@@ -45,7 +46,7 @@ export default async function SessionPage({
       {source ? (
         <aside
           aria-label="Source context"
-          className="border border-(--crt-line) border-l-4 border-l-(--crt-red) bg-(--crt-bg) p-4"
+          className="border border-(--crt-line) bg-(--crt-bg) p-4"
         >
           <p className="crt-micro text-[10px] text-(--crt-red)">
             {source.kind === "question" ? "BRIEF: QUESTION DOSSIER" : "BRIEF: TOPIC REVISION"}
@@ -61,6 +62,10 @@ export default async function SessionPage({
             {source.kind === "question" ? "BACK TO QUESTION >>>" : "PRACTICE THIS TOPIC >>>"}
           </Link>
         </aside>
+      ) : null}
+
+      {session.sourceQuestionId || session.sourceTopicId ? (
+        <VariantSection userId={userId} sessionId={session.id} />
       ) : null}
 
       <ChatThread

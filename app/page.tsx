@@ -33,7 +33,7 @@ export default async function Home() {
     "@graph": [
       {
         "@type": "WebSite",
-        name: "GATE Mentor",
+        name: "Gate Sprint",
         url: "/",
         description:
           "GATE Computer Science preparation: previous-year question practice with an AI tutor.",
@@ -41,7 +41,7 @@ export default async function Home() {
       },
       {
         "@type": "SoftwareApplication",
-        name: "GATE Mentor",
+        name: "Gate Sprint",
         applicationCategory: "EducationalApplication",
         operatingSystem: "Web",
         offers: { "@type": "Offer", price: "0", priceCurrency: "INR" },
@@ -302,7 +302,7 @@ export default async function Home() {
           <FooterLinkGroups />
           <div className="grid gap-px bg-(--crt-line) md:grid-cols-[1fr_auto_1fr]">
             <p className="crt-micro bg-(--crt-bg) px-4 py-4 text-[11px] text-(--crt-ink) sm:px-8">
-              GATE-MENTOR® {"///"} <span className="text-(--crt-dim)">FIELD MANUAL REV 2.6</span>
+              GATE-SPRINT® {"///"} <span className="text-(--crt-dim)">FIELD MANUAL REV 2.6</span>
             </p>
             <nav aria-label="Footer" className="crt-micro flex flex-wrap bg-(--crt-bg) text-[11px]">
               <Link href="/practice" className="border-x border-(--crt-line) px-5 py-4 transition-colors hover:bg-(--crt-ink) hover:text-(--crt-bg)">

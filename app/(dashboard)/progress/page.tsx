@@ -6,6 +6,7 @@ import {
   BreakdownTable,
   RecommendationCard,
 } from "@/components/progress/cards";
+import { ProgressTabs } from "@/components/progress/tabs";
 import { Reveal } from "@/components/motion/reveal";
 import { ProgressCharts } from "@/components/progress/charts";
 
@@ -101,6 +102,7 @@ export default async function ProgressPage() {
 
   return (
     <div className="flex flex-col gap-8">
+      <ProgressTabs active="overview" />
       <section
         aria-label="Overall"
         className="border border-(--crt-line) bg-(--crt-bg)"

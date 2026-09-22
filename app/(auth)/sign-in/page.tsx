@@ -67,7 +67,7 @@ export default async function SignInPage({
     <main className="surface-grid flex min-h-dvh w-full flex-col items-center justify-center gap-6 px-4 py-16">
       <Card className="w-full max-w-md border-border shadow-xl shadow-foreground/10">
         <CardHeader>
-          <CardTitle>Sign in to GATE Mentor</CardTitle>
+          <CardTitle>Sign in to Gate Sprint</CardTitle>
           <CardDescription>
             One account keeps your attempts, bookmarks, and Mentor chats in
             sync.

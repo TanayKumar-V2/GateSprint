@@ -4,6 +4,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { figureUrl } from "@/components/questions/question-figures";
+import Image from "next/image";
 
 type Option = { id: string; text: string };
 type AdminQuestion = { id: string; year: number; questionNumber: number | null; type: "mcq" | "msq" | "nat"; difficulty: "easy" | "medium" | "hard"; prompt: string; options: Option[] | null; correctAnswer: unknown; marks: number; negativeMarks: number; sourceLabel: string | null; extractionConfidence: number | null; isPublished: boolean; subjectId: string; subjectName: string; topicId: string; topicName: string; solution: string | null; images: { id: string; position: number }[] };
@@ -56,8 +57,7 @@ export function AdminQuestionManager({ initialQuestions, subjects, topics }: { i
       {notice ? <p className="mt-4 text-sm text-primary">{notice}</p> : null}<Button type="submit" className="mt-5 w-full">{editing ? "Save changes" : "Add question"}</Button>
     </form>
     <section><div className="mb-4 flex items-end justify-between"><div><h2 className="text-xl font-semibold">Manage questions</h2><p className="mt-1 text-sm text-muted-foreground">{items.length} questions in the bank</p></div></div><div className="grid gap-3">{items.map((item) => <article key={item.id} className="rounded-xl border border-border bg-card p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><div className="flex flex-wrap gap-2 text-xs text-muted-foreground"><span>{item.subjectName}</span><span>/</span><span>{item.topicName}</span><span>/</span><span>{item.year}</span><span>/</span><span>{item.type.toUpperCase()}</span></div><h3 className="mt-2 font-medium">{item.prompt.slice(0, 180)}{item.prompt.length > 180 ? "..." : ""}</h3></div><span className={`rounded-full px-2 py-1 text-xs font-medium ${item.isPublished ? "bg-primary/20 text-foreground" : "bg-muted text-muted-foreground"}`}>{item.isPublished ? "Published" : "Draft"}</span>{item.extractionConfidence !== null && item.extractionConfidence < 0.6 ? <span className="rounded-full bg-destructive/15 px-2 py-1 text-xs font-medium text-destructive">Low confidence — verify answer</span> : null}{!item.correctAnswer ? <span className="rounded-full bg-amber-500/15 px-2 py-1 text-xs font-medium text-amber-700 dark:text-amber-400">Needs answer — AI grades first attempt</span> : null}{item.images.length > 0 ? <span className="rounded-full bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">{item.images.length} figure{item.images.length === 1 ? "" : "s"}</span> : null}</div>{item.images.length > 0 ? <div className="mt-3 flex flex-wrap gap-2">{item.images.map((image, index) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img key={image.id} src={figureUrl(item.id, image.id)} alt={`Figure ${index + 1}`} loading="lazy" className="h-20 w-auto max-w-full rounded-lg border border-border bg-background" />
+          <Image key={image.id} src={figureUrl(item.id, image.id)} alt={`Figure ${index + 1}`} width={800} height={400} className="h-20 w-auto max-w-full rounded-lg object-contain border border-border bg-background" />
         ))}</div> : null}<div className="mt-4 flex gap-2"><Button type="button" size="sm" variant="outline" onClick={() => edit(item)}>Edit</Button><Button type="button" size="sm" variant="destructive" onClick={() => void remove(item.id)}>Delete</Button></div></article>)}</div></section>
   </div>;
 }

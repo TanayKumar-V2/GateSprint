@@ -33,7 +33,7 @@ export default function OpengraphImage() {
             color: "#8F8F8F",
           }}
         >
-          <span>[ GATE-MENTOR ]</span>
+          <span>[ GATE-SPRINT ]</span>
           <span>REV 2.6</span>
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>

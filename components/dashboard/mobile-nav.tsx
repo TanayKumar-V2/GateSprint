@@ -10,6 +10,12 @@ const SECTIONS = [
   { href: "/mentor", label: "MENTOR", code: "D-02" },
   { href: "/progress", label: "PROGRESS", code: "D-03" },
   { href: "/bookmarks", label: "SAVED", code: "D-04" },
+  { href: "/mistakes", label: "MISTAKES", code: "D-05" },
+  { href: "/revision", label: "REVISION", code: "D-06" },
+  { href: "/syllabus", label: "SYLLABUS", code: "D-07" },
+  { href: "/mocks", label: "MOCKS", code: "D-08" },
+  { href: "/trends", label: "TRENDS", code: "D-09" },
+  { href: "/sheets", label: "SHEETS", code: "D-10" },
 ] as const;
 
 const PAGES = [
@@ -101,7 +107,7 @@ export function MobileNav({
                     className={cn(
                       "flex items-center justify-between px-5 py-4 transition-colors",
                       active
-                        ? "border-l-4 border-l-(--crt-red) bg-(--crt-raised) font-bold text-(--crt-ink)"
+                        ? "bg-(--crt-raised) font-bold text-(--crt-ink)"
                         : "text-(--crt-dim) hover:bg-(--crt-ink) hover:text-(--crt-bg)",
                     )}
                   >

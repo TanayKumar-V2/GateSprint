@@ -1,4 +1,4 @@
-# GATE Mentor Extensions — 9 Aspirant-Requested Features
+# Gate Sprint Extensions — 9 Aspirant-Requested Features
 
 Source: serious GATE CS/IT aspirant feedback. Goal: turn single-question practice into rank-oriented exam preparation: practice -> analyze -> revise -> retest under pressure.
 

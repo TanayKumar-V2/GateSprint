@@ -292,6 +292,16 @@ export async function buildGenerationInput(
     const block = await buildTopicContext(userId, session.sourceTopicId);
     if (block) blocks.push(block);
   }
+  // Stored system context (e.g. a formula sheet's delimited content for a
+  // sheet quiz) joins the system prompt — never the visible history.
+  const systemRows = await db
+    .select({ content: chatMessages.content })
+    .from(chatMessages)
+    .where(and(eq(chatMessages.sessionId, sessionId), eq(chatMessages.role, "system")))
+    .orderBy(chatMessages.createdAt);
+  for (const row of systemRows) {
+    if (row.content.trim()) blocks.push(row.content.slice(0, 8000));
+  }
 
   const history = await db
     .select({ role: chatMessages.role, content: chatMessages.content })

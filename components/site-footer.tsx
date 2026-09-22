@@ -69,7 +69,7 @@ export function FooterColophon({ className = "" }: { className?: string }) {
       className={`flex flex-wrap items-center gap-x-4 gap-y-1 bg-(--crt-bg) px-4 py-3 sm:px-5 ${className}`}
     >
       <span className="crt-micro text-[10px] text-(--crt-dim)">
-        GATE-MENTOR® {"///"} FIELD MANUAL REV 2.6
+        GATE-SPRINT® {"///"} FIELD MANUAL REV 2.6
       </span>
       <span aria-hidden="true" className="crt-barcode h-5 min-w-16 flex-1 text-(--crt-line)" />
       <a

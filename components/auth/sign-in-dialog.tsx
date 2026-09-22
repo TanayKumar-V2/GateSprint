@@ -34,7 +34,7 @@ export function SignInDialog({ configured, triggerClassName, children }: SignInD
           <div aria-hidden="true" className="crt-scanlines pointer-events-none absolute inset-0" />
           {/* header strip */}
           <div className="crt-micro relative flex items-center justify-between border-b border-(--crt-line) px-5 py-2.5 text-[10px] text-(--crt-dim)">
-            <span>[ AUTH {"///"} GATE-MENTOR ]</span>
+            <span>[ AUTH {"///"} GATE-SPRINT ]</span>
             <Dialog.Close
               aria-label="Close sign-in"
               className="border border-(--crt-line) px-2 py-1 text-[11px] text-(--crt-ink) transition-colors hover:border-(--crt-red) hover:bg-(--crt-red) hover:text-(--crt-bg)"
