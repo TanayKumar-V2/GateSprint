@@ -57,7 +57,11 @@ export function SuggestionGrid() {
   );
 }
 
-export function EmptyMentor() {
+import Link from "next/link";
+
+
+
+export function EmptyMentor({ recentSessions }: { recentSessions?: { id: string, title: string }[] }) {
   return (
     <div className="flex max-w-2xl flex-col gap-6 py-2">
       <div>
@@ -70,6 +74,21 @@ export function EmptyMentor() {
           CHAT OPENS AUTOMATICALLY.
         </p>
       </div>
+      {recentSessions && recentSessions.length > 0 ? (
+        <div className="flex flex-col gap-2">
+          <p className="crt-micro text-[10px] text-(--crt-red)">[ RECENT SESSIONS ]</p>
+          <ul className="flex flex-col gap-2">
+            {recentSessions.map(s => (
+              <li key={s.id}>
+                <Link href={`/mentor/${s.id}`} className="group flex items-center justify-between border border-(--crt-line) bg-(--crt-bg) p-4 transition-colors hover:border-(--crt-red)">
+                  <span className="text-sm font-medium text-(--crt-ink)">{s.title}</span>
+                  <span className="crt-micro text-[11px] text-(--crt-ink) transition-colors group-hover:text-(--crt-red)">RESUME &gt;&gt;&gt;</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
       <SuggestionGrid />
       <div className="border border-(--crt-line) bg-(--crt-bg) p-4">
         <p className="crt-micro text-[10px] text-(--crt-red)">[ GOOD THINGS TO ASK ]</p>

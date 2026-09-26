@@ -120,6 +120,8 @@ export type SessionSourceInfo =
       href: string;
       heading: string;
       detail: string;
+      isCorrect?: boolean | null;
+      hasSolution?: boolean;
     }
   | {
       kind: "topic";
@@ -147,11 +149,50 @@ export async function getSessionSourceInfo(
       .limit(1);
     const q = rows[0];
     if (!q) return null;
+
+    // Fetch the user's latest attempt for this question
+    let isCorrect: boolean | null = null;
+    try {
+      const { attempts } = await import("@/db/schema");
+      const attemptRows = await db
+        .select({ isCorrect: attempts.isCorrect })
+        .from(attempts)
+        .where(
+          and(
+            eq(attempts.userId, session.userId),
+            eq(attempts.questionId, session.sourceQuestionId)
+          )
+        )
+        .orderBy(desc(attempts.createdAt))
+        .limit(1);
+      
+      if (attemptRows.length > 0 && attemptRows[0] !== undefined) {
+        isCorrect = attemptRows[0].isCorrect;
+      }
+    } catch {
+      // Ignore if table schema not loaded
+    }
+
+    let hasSolution = false;
+    try {
+      const { solutions } = await import("@/db/schema");
+      const solRows = await db
+        .select({ id: solutions.id })
+        .from(solutions)
+        .where(eq(solutions.questionId, session.sourceQuestionId))
+        .limit(1);
+      hasSolution = solRows.length > 0;
+    } catch {
+      // Ignore
+    }
+
     return {
       kind: "question",
       href: `/practice/${session.sourceQuestionId}`,
       heading: `${q.subjectName} · ${q.topicName}`,
-      detail: q.prompt.length > 140 ? `${q.prompt.slice(0, 137).trimEnd()}…` : q.prompt,
+      detail: q.prompt,
+      isCorrect,
+      hasSolution,
     };
   }
   if (session.sourceTopicId) {

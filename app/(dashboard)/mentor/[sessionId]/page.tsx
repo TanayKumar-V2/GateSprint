@@ -8,6 +8,7 @@ import {
 } from "@/lib/chat";
 import { ChatThread } from "@/components/chat/chat-thread";
 import { VariantSection } from "@/components/variants/variant-section";
+import { MathText } from "@/components/markdown/math-text";
 
 export default async function SessionPage({
   params,
@@ -52,9 +53,19 @@ export default async function SessionPage({
             {source.kind === "question" ? "BRIEF: QUESTION DOSSIER" : "BRIEF: TOPIC REVISION"}
           </p>
           <p className="mt-1.5 text-sm font-bold uppercase tracking-tight text-(--crt-ink)">{source.heading}</p>
-          <p className="mt-1 line-clamp-2 text-sm leading-6 text-(--crt-dim)">
-            {source.detail}
-          </p>
+          <div className="mt-2 text-sm leading-6 text-(--crt-dim)">
+            <MathText text={source.detail} />
+          </div>
+          
+          {source.kind === "question" && source.isCorrect !== undefined ? (
+            <div className="mt-3 flex gap-2">
+              <span className={`crt-tag ${source.isCorrect ? "crt-tag-solid" : "crt-tag-red"}`}>
+                {source.isCorrect ? "SOLVED ✓" : "ATTEMPTED"}
+              </span>
+              {source.hasSolution ? <span className="crt-tag">HAS SOLUTION</span> : null}
+            </div>
+          ) : null}
+
           <Link
             href={source.href}
             className="crt-micro mt-2 inline-block text-[11px] text-(--crt-ink) underline decoration-(--crt-red) decoration-2 underline-offset-4 hover:text-(--crt-red)"

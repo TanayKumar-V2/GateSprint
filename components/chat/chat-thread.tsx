@@ -256,71 +256,76 @@ export function ChatThread({
       </div>
 
       {error ? (
-        <p role="alert" className="crt-micro py-2 text-[11px] text-(--crt-red)">
-          !! {error.toUpperCase()}
+        <p role="alert" className="crt-micro py-2 text-[11px] text-(--crt-red) uppercase">
+          !! {error}
         </p>
       ) : null}
 
-      <div className="sticky bottom-0 flex min-w-0 items-stretch gap-px border border-(--crt-line) bg-(--crt-line)">
-        {streaming ? (
-          <button
-            type="button"
-            onClick={() => abortRef.current?.abort()}
-            className="crt-btn-line min-h-11 flex-1 border-0"
-          >
-            ■ STOP
-          </button>
-        ) : (
-          <>
-            <label htmlFor="composer" className="sr-only">
-              Message Mentor
-            </label>
-            <span aria-hidden="true" className="hidden items-center bg-(--crt-bg) px-5 font-mono text-[15px] font-bold text-(--crt-red) sm:flex">
-              &gt;
-            </span>
-            <textarea
-              id="composer"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  void send(input, { appendUser: true }).then(() => setInput(""));
-                }
-              }}
-              rows={2}
-              placeholder="ASK ABOUT A CONCEPT OR A QUESTION…"
-              className="crt-field min-h-11 min-w-0 flex-1 border-0 text-base normal-case tracking-normal sm:text-[13px]"
-            />
+      <div className="sticky bottom-0 flex min-w-0 flex-col gap-2 bg-(--crt-bg)">
+        <div className="flex min-w-0 items-stretch gap-px border border-(--crt-line) bg-(--crt-line)">
+          <label htmlFor="composer" className="sr-only">
+            Message Mentor
+          </label>
+          <span aria-hidden="true" className="hidden items-center bg-(--crt-bg) px-5 font-mono text-[15px] font-bold text-(--crt-red) sm:flex">
+            &gt;
+          </span>
+          <textarea
+            id="composer"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                const text = input;
+                if (!text.trim() || streaming) return;
+                setInput("");
+                void send(text, { appendUser: true });
+              }
+            }}
+            rows={2}
+            maxLength={4000}
+            placeholder="ASK ABOUT A CONCEPT OR A QUESTION…"
+            className="crt-field min-h-11 min-w-0 flex-1 border-0 text-base normal-case tracking-normal sm:text-[13px]"
+          />
+          {streaming ? (
+            <button
+              type="button"
+              onClick={() => abortRef.current?.abort()}
+              className="crt-btn-line max-sm:px-3 min-h-11 shrink-0 border-0 bg-(--crt-bg)"
+            >
+              ■ STOP
+            </button>
+          ) : (
             <button
               type="button"
               className="crt-btn-red max-sm:px-3 min-h-11 shrink-0 border-0"
               disabled={input.trim() === ""}
               onClick={() => {
                 const text = input;
+                if (!text.trim() || streaming) return;
                 setInput("");
                 void send(text, { appendUser: true });
               }}
             >
               SEND
             </button>
-            {lastUser ? (
-              <button
-                type="button"
-                title="Get a fresh reply to the last message (added below, history kept)"
-                onClick={() => void send(lastUser.content, { appendUser: false })}
-                className="crt-btn-line max-sm:px-3 min-h-11 shrink-0 border-0 border-l border-(--crt-line)"
-              >
-                RETRY
-              </button>
-            ) : null}
-          </>
-        )}
+          )}
+          {lastUser ? (
+            <button
+              type="button"
+              title="Get a fresh reply to the last message (added below, history kept)"
+              onClick={() => void send(lastUser.content, { appendUser: false })}
+              className="crt-btn-line max-sm:px-3 min-h-11 shrink-0 border-0 border-l border-(--crt-line) bg-(--crt-bg)"
+            >
+              RETRY
+            </button>
+          ) : null}
+        </div>
+        <div className="crt-micro flex justify-between px-1 pb-1 text-[10px] leading-relaxed text-(--crt-dim)">
+          <span>ENTER TO SEND · SHIFT+ENTER FOR NEW LINE. VERIFY WITH SOLUTIONS.</span>
+          <span>{input.length}/4000</span>
+        </div>
       </div>
-      <p className="crt-micro mt-3 pb-1 text-[10px] leading-relaxed text-(--crt-dim)">
-        ENTER TO SEND · SHIFT+ENTER FOR NEW LINE. MENTOR CAN MAKE MISTAKES
-        — VERIFY AGAINST SOLUTIONS AND STANDARD TEXTS.
-      </p>
     </div>
   );
 }

@@ -661,16 +661,216 @@ input[type="checkbox"].crt-check:checked::after {
     transform: translateX(-50%);
   }
 }
+.crt-scanlines {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    var(--crt-scan) 2px,
+    var(--crt-scan) 4px
+  );
+}
+.crt-noise::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.crt-halftone {
+  background-image: radial-gradient(var(--crt-dot) 1px, transparent 1.4px);
+  background-size: 7px 7px;
+}
+.crt-stripes {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--crt-red) 0 14px,
+    var(--crt-bg) 14px 28px
+  );
+}
+.crt-barcode {
+  background-image: repeating-linear-gradient(
+    90deg,
+    currentcolor 0 2px,
+    transparent 2px 5px,
+    currentcolor 5px 6px,
+    transparent 6px 11px,
+    currentcolor 11px 14px,
+    transparent 14px 18px
+  );
+}
+.crt-phosphor {
+  text-shadow: var(--crt-glow);
+}
+.crt-blink {
+  animation: crt-blink 1.1s steps(2, start) infinite;
+}
+@keyframes crt-blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+/* ---------- Shared workspace controls (square, mono, terminal) ---------- */
+.crt-tag {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--crt-line);
+  background: var(--crt-bg);
+  padding: 3px 8px;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  color: var(--crt-dim);
+  white-space: nowrap;
+}
+.crt-tag-solid {
+  background: var(--crt-ink);
+  border-color: var(--crt-ink);
+  color: var(--crt-bg);
+  font-weight: 700;
+}
+.crt-tag-red {
+  background: var(--crt-red);
+  border-color: var(--crt-red);
+  color: var(--crt-bg);
+  font-weight: 700;
+}
+.crt-label {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--crt-dim);
+  line-height: 1.4;
+}
+.crt-btn-red {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--crt-red);
+  border: 1px solid var(--crt-red);
+  color: var(--crt-bg);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 11px 22px;
+  cursor: pointer;
+}
+.crt-btn-red:hover {
+  background: var(--crt-ink);
+  border-color: var(--crt-ink);
+}
+.crt-btn-red:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.crt-btn-line {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid var(--crt-edge);
+  color: var(--crt-ink);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 11px 22px;
+  cursor: pointer;
+}
+.crt-btn-line:hover {
+  background: var(--crt-ink);
+  border-color: var(--crt-ink);
+  color: var(--crt-bg);
+}
+.crt-btn-line:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.crt-field {
+  width: 100%;
+  height: 44px;
+  background: var(--crt-bg);
+  border: 1px solid var(--crt-edge);
+  color: var(--crt-ink);
+  padding: 0 12px;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+.crt-field:focus {
+  outline: 2px solid var(--crt-red);
+  outline-offset: 2px;
+  border-color: var(--crt-red);
+}
+textarea.crt-field {
+  height: auto;
+  padding: 10px 12px;
+  line-height: 1.5;
+}
+.crt-field::placeholder {
+  color: var(--crt-dim);
+  opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+input[type="checkbox"].crt-check {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border: 1px solid var(--crt-edge);
+  background: var(--crt-bg);
+  cursor: pointer;
+  position: relative;
+}
+input[type="checkbox"].crt-check:checked {
+  background: var(--crt-red);
+  border-color: var(--crt-red);
+}
+input[type="checkbox"].crt-check:checked::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid var(--crt-bg);
+  border-width: 0 2px 2px 0;
+  transform: rotate(42deg);
+}
+
+/* ---------- Landing marquee (linear constant motion) ---------- */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
 .animate-marquee {
   animation: marquee 36s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+  .animate-marquee {
+    animation-play-state: paused;
+  }
+  .reveal {
+    transition: opacity 0.3s ease;
+    transform: none !important;
+    filter: none !important;
+  }
+  .crt-blink {
+    animation: none;
   }
 }

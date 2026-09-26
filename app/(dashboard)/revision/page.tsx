@@ -48,7 +48,7 @@ export default async function RevisionPage() {
           </h2>
           <ul className="grid gap-px border border-(--crt-line) bg-(--crt-line)">
             {upcoming.slice(0, 10).map((d) => (
-              <DueCard key={d.questionId} item={d} />
+              <DueCard key={d.questionId} item={d} isUpcoming />
             ))}
           </ul>
         </section>

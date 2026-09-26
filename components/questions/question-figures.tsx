@@ -41,14 +41,16 @@ export function QuestionFigures({
   return (
     <div className="grid gap-px border border-(--crt-line) bg-(--crt-line)" aria-label="Question figures">
       {images.map((image, index) => (
-        <figure key={image.id} className="m-0 bg-(--crt-bg) p-3 sm:p-4">
+        <figure id={`figure-${index + 1}`} key={image.id} className="m-0 bg-(--crt-bg) p-3 sm:p-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={figureUrl(questionId, image.id)}
-            alt={`Figure ${index + 1} for this question`}
-            loading="lazy"
-            className="h-auto max-h-96 w-auto max-w-full border border-(--crt-line)"
-          />
+          <a href={figureUrl(questionId, image.id)} target="_blank" rel="noopener noreferrer">
+            <img
+              src={figureUrl(questionId, image.id)}
+              alt={`Figure ${index + 1} for this question`}
+              loading="lazy"
+              className="h-auto max-h-96 w-auto max-w-full border border-(--crt-line) transition-transform hover:scale-[1.02]"
+            />
+          </a>
           <figcaption className="crt-micro mt-2 text-[10px] text-(--crt-dim)">
             FIGURE {index + 1}
           </figcaption>

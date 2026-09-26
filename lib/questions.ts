@@ -21,6 +21,7 @@ export type QuestionListItem = {
   prompt: string;
   options: { id: string; text: string }[] | null;
   marks: number;
+  negativeMarks: number;
   sourceLabel: string | null;
   subject: { slug: string; name: string };
   topic: { slug: string; name: string };
@@ -109,14 +110,10 @@ function bookmarkedExists(userId: string) {
   ).mapWith(Boolean);
 }
 
-/**
- * Published questions with user-specific attempt/bookmark flags.
- * Correct answers and solutions are never included here.
- */
-export async function listQuestions(
+async function buildFilterConditions(
   userId: string,
   filter: QuestionFilter & { attempted?: boolean; bookmarked?: boolean },
-): Promise<QuestionList> {
+) {
   const attempted = attemptedExists(userId);
   const bookmarked = bookmarkedExists(userId);
 
@@ -132,7 +129,7 @@ export async function listQuestions(
       .from(subjects)
       .where(eq(subjects.slug, filter.subject))
       .limit(1);
-    if (!rows[0]) return emptyPage(filter);
+    if (!rows[0]) return null;
     subjectId = rows[0].id;
     conditions.push(eq(questions.subjectId, subjectId));
   }
@@ -144,17 +141,31 @@ export async function listQuestions(
       .select({ id: topics.id })
       .from(topics)
       .where(topicWhere);
-    if (rows.length === 0) return emptyPage(filter);
+    if (rows.length === 0) return null;
     conditions.push(inArray(questions.topicId, rows.map((row) => row.id)));
   }
   if (filter.attempted === true) conditions.push(attempted);
-  if (filter.attempted === false)
-    conditions.push(sql`NOT (${attempted})`);
+  if (filter.attempted === false) conditions.push(sql`NOT (${attempted})`);
   if (filter.bookmarked === true) conditions.push(bookmarked);
-  if (filter.bookmarked === false)
-    conditions.push(sql`NOT (${bookmarked})`);
+  if (filter.bookmarked === false) conditions.push(sql`NOT (${bookmarked})`);
 
-  const where = and(...conditions);
+  return { where: and(...conditions), attempted, bookmarked };
+}
+
+/**
+ * Published questions with user-specific attempt/bookmark flags.
+ * Correct answers and solutions are never included here.
+ */
+export async function listQuestions(
+  userId: string,
+  filter: QuestionFilter & { attempted?: boolean; bookmarked?: boolean },
+): Promise<QuestionList> {
+  const filterResult = await buildFilterConditions(userId, filter);
+  if (!filterResult) return emptyPage(filter);
+  
+  const { where, attempted, bookmarked } = filterResult;
+
+
   const totalRows = await db
     .select({ total: count() })
     .from(questions)
@@ -172,6 +183,7 @@ export async function listQuestions(
       prompt: questions.prompt,
       options: questions.options,
       marks: questions.marks,
+      negativeMarks: questions.negativeMarks,
       sourceLabel: questions.sourceLabel,
       subjectSlug: subjects.slug,
       subjectName: subjects.name,
@@ -200,6 +212,7 @@ export async function listQuestions(
       prompt: r.prompt,
       options: r.options,
       marks: r.marks,
+      negativeMarks: r.negativeMarks,
       sourceLabel: r.sourceLabel,
       subject: { slug: r.subjectSlug, name: r.subjectName },
       topic: { slug: r.topicSlug, name: r.topicName },
@@ -212,6 +225,31 @@ export async function listQuestions(
     total: totalCount,
     totalPages: Math.max(1, Math.ceil(totalCount / filter.limit)),
   };
+}
+
+export async function getAdjacentQuestions(
+  userId: string,
+  questionId: string,
+  filter: QuestionFilter & { attempted?: boolean; bookmarked?: boolean },
+): Promise<{ prev: string | null; next: string | null; nextUnattempted: string | null }> {
+  const filterResult = await buildFilterConditions(userId, filter);
+  if (!filterResult) return { prev: null, next: null, nextUnattempted: null };
+
+  const { where, attempted } = filterResult;
+  const rows = await db
+    .select({ id: questions.id, attempted })
+    .from(questions)
+    .where(where)
+    .orderBy(desc(questions.year), questions.questionNumber);
+
+  const idx = rows.findIndex((r) => r.id === questionId);
+  if (idx === -1) return { prev: null, next: null, nextUnattempted: null };
+
+  const prev = idx > 0 ? rows[idx - 1]?.id ?? null : null;
+  const next = idx < rows.length - 1 ? rows[idx + 1]?.id ?? null : null;
+  const nextUnattempted = rows.slice(idx + 1).find((r) => r.attempted === false)?.id ?? null;
+
+  return { prev, next, nextUnattempted };
 }
 
 function emptyPage(filter: { page: number; limit: number }): QuestionList {

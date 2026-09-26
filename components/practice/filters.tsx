@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 
 export type FilterOptions = {
   subjects: { slug: string; name: string }[];
@@ -17,10 +20,16 @@ export type FilterOptions = {
  */
 export function PracticeFilters({ options }: { options: FilterOptions }) {
   const { subjects, topics, years, current } = options;
-  const uniqueTopics = Array.from(new Map(topics.map((t) => [t.slug, t])).values());
+  const [subject, setSubject] = useState(current.subject ?? "");
+  const [topic, setTopic] = useState(current.topic ?? "");
+  
   const activeCount = Object.entries(current).filter(
     ([key, value]) => key !== "page" && value !== "",
   ).length;
+
+  const relevantTopics = subject ? topics.filter(t => t.subjectId === subject) : topics;
+  const uniqueTopics = Array.from(new Map(relevantTopics.map((t) => [t.slug, t])).values());
+
   return (
     <div className="border border-(--crt-line) bg-(--crt-bg)">
       <input
@@ -37,6 +46,9 @@ export function PracticeFilters({ options }: { options: FilterOptions }) {
           >
             {activeCount > 0 ? `[ FILTERS · ${activeCount} ]` : "[ FILTERS ]"}
           </label>
+          <span className="hidden sm:inline">
+            {activeCount > 0 ? `[ FILTERS · ${activeCount} ACTIVE ]` : "[ FILTERS ]"}
+          </span>
           <Link href="/practice" className="text-(--crt-ink) underline decoration-(--crt-red) decoration-2 underline-offset-4 hover:text-(--crt-red)">
             RESET
           </Link>
@@ -45,13 +57,17 @@ export function PracticeFilters({ options }: { options: FilterOptions }) {
       <form
         method="get"
         action="/practice"
-        className="hidden gap-4 p-4 peer-checked:grid sm:grid sm:grid-cols-3 sm:p-5 lg:grid-cols-4"
+        className="hidden gap-4 p-4 peer-checked:grid sm:grid sm:grid-cols-3 sm:p-5 lg:grid-cols-5"
       >
         <label className="flex flex-col gap-1.5">
           <span className="crt-label">Subject</span>
           <select
             name="subject"
-            defaultValue={current.subject ?? ""}
+            value={subject}
+            onChange={(e) => {
+              setSubject(e.target.value);
+              setTopic("");
+            }}
             className="crt-field"
           >
             <option value="">ALL SUBJECTS</option>
@@ -66,7 +82,8 @@ export function PracticeFilters({ options }: { options: FilterOptions }) {
           <span className="crt-label">Topic</span>
           <select
             name="topic"
-            defaultValue={current.topic ?? ""}
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
             className="crt-field"
           >
             <option value="">ALL TOPICS</option>
@@ -118,18 +135,20 @@ export function PracticeFilters({ options }: { options: FilterOptions }) {
             <option value="hard">HARD</option>
           </select>
         </label>
+        <label className="flex flex-col gap-1.5">
+          <span className="crt-label">Attempt Status</span>
+          <select
+            name="attempted"
+            defaultValue={current.attempted ?? ""}
+            className="crt-field"
+          >
+            <option value="">ALL STATUS</option>
+            <option value="true">ATTEMPTED ONLY</option>
+            <option value="false">UNATTEMPTED ONLY</option>
+          </select>
+        </label>
         <fieldset className="flex items-end gap-5 pb-3">
           <legend className="sr-only">Status</legend>
-          <label className="crt-micro flex cursor-pointer items-center gap-2 text-[11px] text-(--crt-ink)">
-            <input
-              type="checkbox"
-              name="attempted"
-              value="true"
-              defaultChecked={current.attempted === "true"}
-              className="crt-check"
-            />
-            ATTEMPTED
-          </label>
           <label className="crt-micro flex cursor-pointer items-center gap-2 text-[11px] text-(--crt-ink)">
             <input
               type="checkbox"

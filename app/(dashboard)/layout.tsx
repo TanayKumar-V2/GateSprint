@@ -8,18 +8,7 @@ import { ThemeLogo } from "@/components/theme-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import "katex/dist/katex.min.css";
 
-const NAV = [
-  { href: "/practice", label: "PRACTICE", code: "D-01" },
-  { href: "/mentor", label: "MENTOR", code: "D-02" },
-  { href: "/progress", label: "PROGRESS", code: "D-03" },
-  { href: "/bookmarks", label: "SAVED", code: "D-04" },
-  { href: "/mistakes", label: "MISTAKES", code: "D-05" },
-  { href: "/revision", label: "REVISION", code: "D-06" },
-  { href: "/syllabus", label: "SYLLABUS", code: "D-07" },
-  { href: "/mocks", label: "MOCKS", code: "D-08" },
-  { href: "/trends", label: "TRENDS", code: "D-09" },
-  { href: "/sheets", label: "SHEETS", code: "D-10" },
-];
+import { DesktopNav } from "@/components/dashboard/desktop-nav";
 
 export default async function DashboardLayout({
   children,
@@ -65,23 +54,7 @@ export default async function DashboardLayout({
             </span>
           </Link>
           <MobileNav onSignOut={handleSignOut} />
-          <nav aria-label="Study sections" className="hidden min-w-0 flex-1 items-stretch overflow-x-auto sm:flex">
-            <ul className="crt-micro flex items-stretch text-[11px]">
-              {NAV.map((item) => (
-                <li key={item.href} className="flex items-stretch">
-                  <Link
-                    href={item.href}
-                    className="flex items-center gap-2 whitespace-nowrap border-r border-(--crt-line) px-2.5 py-3 text-(--crt-dim) transition-colors hover:bg-(--crt-ink) hover:text-(--crt-bg) sm:px-5"
-                  >
-                    [ {item.label} ]
-                    <span aria-hidden="true" className="hidden text-[9px] opacity-60 lg:inline">
-                      {item.code}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          <DesktopNav />
           <div className="flex shrink-0 items-center gap-2 border-l border-(--crt-line) px-2 sm:px-4">
             <ThemeToggle className="border border-(--crt-line)" />
             {username && user ? (

@@ -52,9 +52,10 @@ export function normalizeMathDelimiters(input: string): string {
             .replace(/≠/g, "\\neq ");
 
           // Fix PDF extraction artifacts where single variable power digits lack carets (e.g. n2 -> $n^2$)
+          // Tightened to require space or punctuation around it to avoid matching inside identifiers
           text = mapNonMathSegments(text, (s) =>
             s.replace(
-              /(?<![a-zA-Z0-9])([nxyzkm])([2-9])(?![a-zA-Z0-9])/g,
+              /(?<=\s|^|\b)(n|x|y|z|k|m)([2-9])(?=\s|[.,;:]|$)/g,
               "$$" + "$1^$2" + "$$",
             ),
           );
@@ -91,6 +92,9 @@ export function normalizeMathDelimiters(input: string): string {
             ),
           );
 
+          // Linkify [Figure N] markers
+          text = text.replace(/\[Figure (\d+)\]/g, "[Figure $1](#figure-$1)");
+
           return text;
         })
         .join("");
@@ -122,7 +126,7 @@ export function MathText({
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath]}
-        rehypePlugins={[rehypeKatex]}
+        rehypePlugins={[[rehypeKatex, { strict: false, throwOnError: false, errorColor: "#e61919" }]]}
         components={
           inline
             ? {

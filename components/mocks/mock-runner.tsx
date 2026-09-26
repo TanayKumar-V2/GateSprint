@@ -58,10 +58,13 @@ export function MockRunner({ payload }: { payload: MockRunnerPayload }) {
   const [finishing, setFinishing] = useState(false);
   const [confirming, setConfirming] = useState(false);
 
-  const openedAt = useRef(Date.now());
+  const [initialTime] = useState(() => Date.now());
+  const openedAt = useRef(initialTime);
   const finishingRef = useRef(false);
   const stateRef = useRef({ pos, drafts, natTexts, saved });
-  stateRef.current = { pos, drafts, natTexts, saved };
+  useEffect(() => {
+    stateRef.current = { pos, drafts, natTexts, saved };
+  }, [pos, drafts, natTexts, saved]);
 
   const current = items[pos]!;
 
@@ -82,6 +85,7 @@ export function MockRunner({ payload }: { payload: MockRunnerPayload }) {
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     markVisited(0);
     // Resume visits saved in this browser (server render has no storage).
     try {

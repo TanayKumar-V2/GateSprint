@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { MistakeRow } from "@/lib/mistakes";
 import { MistakeRowActions } from "./mistake-row-actions";
+import { MathText } from "@/components/markdown/math-text";
 
 export function MistakeTable({ rows }: { rows: MistakeRow[] }) {
   return (
@@ -15,7 +16,7 @@ export function MistakeTable({ rows }: { rows: MistakeRow[] }) {
               {m.missCount} MISS{m.missCount === 1 ? "" : "ES"} · LAST {m.lastMissedAt.toISOString().slice(0, 10)}
             </p>
           </div>
-          <p className="line-clamp-3 text-sm leading-relaxed text-(--crt-ink)">{m.prompt}</p>
+          <MathText text={m.prompt} className="line-clamp-3 text-sm leading-relaxed text-(--crt-ink)" />
           <div className="flex flex-wrap items-center gap-2">
             <Link href={m.practicePath} className="crt-btn-line !px-3 !py-1 !text-[10px]">
               RE-ATTEMPT &gt;&gt;&gt;

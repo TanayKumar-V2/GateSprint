@@ -1,14 +1,19 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { subjects, topics } from "@/db/schema";
+import { currentUserId } from "@/lib/current-user";
+import { listSessions } from "@/lib/chat";
 import { EmptyMentor } from "@/components/chat/empty-mentor";
 import { RevisionStarter } from "@/components/chat/revision-starter";
+import { redirect } from "next/navigation";
 
 export default async function MentorPage({
   searchParams,
 }: {
   searchParams: Promise<{ subject?: string; topic?: string }>;
 }) {
+  const userId = await currentUserId();
+  if (!userId) redirect("/sign-in");
   const params = await searchParams;
 
   let revision: { subjectName: string; topicName: string; topicId: string } | null = null;
@@ -34,6 +39,8 @@ export default async function MentorPage({
     }
   }
 
+  const recentSessions = await listSessions(userId, 3);
+
   return (
     <div className="flex flex-col gap-4">
       {revision ? (
@@ -43,7 +50,7 @@ export default async function MentorPage({
           topicId={revision.topicId}
         />
       ) : null}
-      <EmptyMentor />
+      <EmptyMentor recentSessions={recentSessions} />
     </div>
   );
 }

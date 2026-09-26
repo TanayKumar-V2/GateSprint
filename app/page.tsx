@@ -17,6 +17,8 @@ const SIGNAL_ROWS = [
   ["COMPUTER NETWORKS", "CS-04", "135 PYQ", "VOLATILE"],
   ["THEORY OF COMPUTATION", "CS-05", "118 PYQ", "HIGH YIELD"],
   ["DIGITAL LOGIC", "CS-06", "096 PYQ", "STABLE"],
+  ["COMPILER DESIGN", "CS-07", "064 PYQ", "STABLE"],
+  ["DATA STRUCTURES", "CS-08", "090 PYQ", "HIGH YIELD"],
 ] as const;
 
 export default async function Home() {
@@ -58,7 +60,7 @@ export default async function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <a
-        href="#main"
+        href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:bg-(--crt-red) focus:px-4 focus:py-2 focus:font-mono focus:text-xs focus:font-bold focus:uppercase focus:text-(--crt-bg)"
       >
         Skip to content
@@ -66,7 +68,7 @@ export default async function Home() {
       <LandingNav />
 
       {/* HERO — terminal command deck */}
-      <section aria-label="Command deck" className="relative border-b-2 border-(--crt-ink)">
+      <section id="main-content" aria-label="Command deck" className="relative border-b-2 border-(--crt-ink)">
         <div aria-hidden="true" className="crt-scanlines pointer-events-none absolute inset-0" />
         {/* crosshairs at compartment corners */}
         <span aria-hidden="true" className="crt-micro absolute left-3 top-3 z-10 text-(--crt-dim)">+</span>
@@ -102,7 +104,7 @@ export default async function Home() {
 
         <div className="relative px-4 pb-14 pt-14 sm:px-8 sm:pt-20">
           <p className="crt-micro text-[11px] text-(--crt-red) sm:text-xs">
-            [ BOOT-SEQUENCE {"///"} REV 2.6 ] &gt;&gt;&gt; OPERATOR INPUT REQUIRED
+            FREE. GATE CS/IT 2010-2025. 1000+ PYQS.
           </p>
           <h1 className="crt-macro crt-phosphor mt-6 text-[clamp(2.5rem,10vw,11rem)] text-(--crt-ink)">
             MAKE EVERY
@@ -134,12 +136,6 @@ export default async function Home() {
             </div>
           </div>
           <p className="crt-micro mt-6 flex flex-wrap gap-x-8 gap-y-2 text-[10px] text-(--crt-dim) sm:text-[11px]">
-            <span>
-              PRESS <kbd className="border border-(--crt-line) px-1.5 py-0.5 text-(--crt-ink)">P</kbd> TO PRACTICE
-            </span>
-            <span>
-              PRESS <kbd className="border border-(--crt-line) px-1.5 py-0.5 text-(--crt-ink)">M</kbd> FOR MENTOR
-            </span>
             <span>\\\\ FEED STABLE \\\\ LAT 28.61N LON 77.20E</span>
           </p>
         </div>

@@ -12,6 +12,22 @@ import { PracticeFilters } from "@/components/practice/filters";
 import { QuestionCard } from "@/components/practice/question-card";
 import { Reveal } from "@/components/motion/reveal";
 
+function getPages(current: number, total: number) {
+  const pages: (number | "...")[] = [];
+  if (total <= 7) {
+    for (let i = 1; i <= total; i++) pages.push(i);
+  } else {
+    pages.push(1);
+    if (current > 3) pages.push("...");
+    const start = Math.max(2, current - 1);
+    const end = Math.min(total - 1, current + 1);
+    for (let i = start; i <= end; i++) pages.push(i);
+    if (current < total - 2) pages.push("...");
+    pages.push(total);
+  }
+  return pages;
+}
+
 export default async function PracticePage({
   searchParams,
 }: {
@@ -67,7 +83,14 @@ export default async function PracticePage({
           <p className="crt-macro text-[clamp(1.4rem,4vw,2.2rem)] text-(--crt-ink)">
             ZERO HITS<span className="text-(--crt-red)">.</span>
           </p>
-          <p className="crt-micro mt-3 text-[11px] leading-relaxed text-(--crt-dim)">
+          <div className="crt-micro mt-4 flex flex-wrap justify-center gap-2 text-[11px] text-(--crt-dim)">
+            {Object.entries(flat).map(([k, v]) => k !== "page" ? (
+              <span key={k} className="border border-(--crt-edge) px-2 py-1 uppercase">
+                {k}: {v}
+              </span>
+            ) : null)}
+          </div>
+          <p className="crt-micro mt-4 text-[11px] leading-relaxed text-(--crt-dim)">
             NO QUESTIONS MATCH THOSE FILTERS — LOOSEN A FILTER OR TWO.
           </p>
           <Link href="/practice" className="crt-btn-line mt-6">
@@ -78,33 +101,32 @@ export default async function PracticePage({
         <ul className="grid gap-4 md:grid-cols-2">
           {list.data.map((q, i) => (
             <Reveal as="li" key={q.id} delay={(i % 6) * 60}>
-              <QuestionCard question={q} />
+              <QuestionCard question={q} href={`/practice/${q.id}?${new URLSearchParams(flat).toString()}`} />
             </Reveal>
           ))}
         </ul>
       )}
 
       {list.totalPages > 1 ? (
-        <nav aria-label="Pages" className="crt-micro flex flex-wrap items-center gap-3 text-[11px]">
+        <nav aria-label="Pagination" className="crt-micro flex flex-wrap items-center gap-2 text-[11px]">
           {list.page > 1 ? (
+            <Link href={pageHref(list.page - 1)} rel="prev" scroll={true} className="border border-(--crt-edge) px-3 py-2 transition-colors hover:border-(--crt-red) hover:text-(--crt-red)">&lt; PREV</Link>
+          ) : <span className="border border-transparent px-3 py-2 opacity-50 text-(--crt-dim)">&lt; PREV</span>}
+          {getPages(list.page, list.totalPages).map((p, i) => (
+            p === "..." ? <span key={`dots-${i}`} className="px-2 py-2 text-(--crt-dim)">...</span> :
             <Link
-              href={pageHref(list.page - 1)}
-              className="border border-(--crt-edge) px-4 py-2.5 text-(--crt-ink) transition-colors hover:bg-(--crt-ink) hover:text-(--crt-bg)"
+              key={p}
+              href={pageHref(p as number)}
+              scroll={true}
+              aria-current={p === list.page ? "page" : undefined}
+              className={`border px-3 py-2 transition-colors ${p === list.page ? "border-(--crt-red) bg-(--crt-red) text-(--crt-bg)" : "border-(--crt-edge) text-(--crt-ink) hover:border-(--crt-red) hover:text-(--crt-red)"}`}
             >
-              &lt;&lt;&lt; PREV
+              {p}
             </Link>
-          ) : null}
-          <span className="text-(--crt-dim)" aria-current="page">
-            PAGE {list.page} / {list.totalPages}
-          </span>
+          ))}
           {list.page < list.totalPages ? (
-            <Link
-              href={pageHref(list.page + 1)}
-              className="border border-(--crt-edge) px-4 py-2.5 text-(--crt-ink) transition-colors hover:bg-(--crt-ink) hover:text-(--crt-bg)"
-            >
-              NEXT &gt;&gt;&gt;
-            </Link>
-          ) : null}
+            <Link href={pageHref(list.page + 1)} rel="next" scroll={true} className="border border-(--crt-edge) px-3 py-2 transition-colors hover:border-(--crt-red) hover:text-(--crt-red)">NEXT &gt;</Link>
+          ) : <span className="border border-transparent px-3 py-2 opacity-50 text-(--crt-dim)">NEXT &gt;</span>}
         </nav>
       ) : null}
     </div>

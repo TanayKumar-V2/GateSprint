@@ -43,7 +43,7 @@ export function ChatMessageBody({
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath]}
-        rehypePlugins={[rehypeKatex]}
+        rehypePlugins={[[rehypeKatex, { strict: false, throwOnError: false, errorColor: "inherit" }]]}
         components={{
           pre: ({ children }) => <Fragment>{children}</Fragment>,
           code: ({ className: cls, children }) => {

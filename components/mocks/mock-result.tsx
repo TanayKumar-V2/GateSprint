@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import { MathText } from "@/components/markdown/math-text";
 import { QuestionFigures } from "@/components/questions/question-figures";
 import type { MockResultPayload } from "@/lib/mocks";
@@ -23,6 +26,12 @@ function answerText(type: string, answer: unknown): string {
 
 export function MockResult({ result }: { result: MockResultPayload }) {
   const { meta } = result;
+  const [wrongOnly, setWrongOnly] = useState(false);
+
+  const displayedItems = wrongOnly 
+    ? result.items.filter(item => item.isCorrect === false) 
+    : result.items;
+
   return (
     <div className="flex flex-col gap-8">
       <section aria-label="Score" className="border border-(--crt-line) bg-(--crt-bg)">
@@ -71,59 +80,78 @@ export function MockResult({ result }: { result: MockResultPayload }) {
       ) : null}
 
       <section aria-labelledby="review-heading" className="flex flex-col gap-4">
-        <h2 id="review-heading" className="crt-micro text-[11px] text-(--crt-ink)">
-          [ FULL REVIEW {"///"} SOLUTIONS UNLOCKED ]
-        </h2>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <h2 id="review-heading" className="crt-micro text-[11px] text-(--crt-ink)">
+            [ FULL REVIEW {"///"} SOLUTIONS UNLOCKED ]
+          </h2>
+          <label className="crt-micro flex items-center gap-2 text-[10px] text-(--crt-ink) cursor-pointer">
+            <input 
+              type="checkbox" 
+              checked={wrongOnly} 
+              onChange={(e) => setWrongOnly(e.target.checked)}
+              className="appearance-none border border-(--crt-line) bg-(--crt-bg) w-3 h-3 checked:bg-(--crt-red) checked:border-(--crt-red) transition-colors"
+            />
+            SHOW WRONG ONLY
+          </label>
+        </div>
         <ol className="flex flex-col gap-5">
-          {result.items.map((item, i) => (
-            <li key={item.itemId} className="border border-(--crt-line) bg-(--crt-bg)">
-              <div className="crt-micro flex flex-wrap items-center justify-between gap-2 border-b border-(--crt-line) px-4 py-2 text-[10px] text-(--crt-dim)">
-                <span>
-                  Q{i + 1} {"///"} {item.question.subject.name.toUpperCase()} {"///"} {item.question.topic.name.toUpperCase()}
-                </span>
-                <span>
-                  {item.isCorrect === null ? "SKIPPED" : item.isCorrect ? "CORRECT" : "WRONG"}
-                  {" /// "}{formatSeconds(item.timeTakenSeconds)}
-                </span>
-              </div>
-              <div className="flex flex-col gap-3 px-4 py-4 sm:px-5">
-                <div className="text-[15px] font-medium leading-7 break-words text-(--crt-ink)">
-                  <MathText text={item.question.prompt} inline />
-                </div>
-                <QuestionFigures questionId={item.question.id} images={item.question.images} />
-                <div className="crt-micro grid gap-2 border border-(--crt-line) p-3 text-[11px] sm:grid-cols-2">
-                  <p className="text-(--crt-dim)">
-                    YOURS: <span className="text-(--crt-ink)">{answerText(item.question.type, item.selectedAnswer)}</span>
-                  </p>
-                  <p className="text-(--crt-dim)">
-                    KEY: <span className="text-(--crt-ink)">{answerText(item.question.type, item.correctAnswer)}</span>
-                  </p>
-                </div>
-                {item.solution ? (
-                  <details className="border border-(--crt-line)">
-                    <summary className="crt-micro cursor-pointer px-4 py-2.5 text-[11px] text-(--crt-ink) hover:text-(--crt-red)">
-                      [+] SOLUTION
-                    </summary>
-                    <MathText
-                      text={item.solution}
-                      className="prose-study px-4 py-3 text-sm leading-7 text-(--crt-ink) [&_p]:my-2"
-                    />
-                  </details>
-                ) : null}
-                <div className="flex flex-wrap gap-2">
-                  <Link href={item.practicePath} className="crt-btn-line !px-3 !py-1 !text-[10px]">
-                    DRILL IN PRACTICE
-                  </Link>
-                  <Link
-                    href={`/mentor?subject=${item.question.subject.slug}&topic=${item.question.topic.slug}`}
-                    className="crt-btn-line !px-3 !py-1 !text-[10px]"
-                  >
-                    ASK MENTOR
-                  </Link>
-                </div>
-              </div>
+          {displayedItems.length === 0 ? (
+            <li className="border border-(--crt-line) bg-(--crt-bg) p-8 text-center">
+              <p className="crt-macro text-[clamp(1.4rem,4vw,2.2rem)] text-(--crt-ink)">
+                NO MISTAKES FOUND.
+              </p>
             </li>
-          ))}
+          ) : (
+            displayedItems.map((item, i) => (
+              <li key={item.itemId} className="border border-(--crt-line) bg-(--crt-bg)">
+                <div className="crt-micro flex flex-wrap items-center justify-between gap-2 border-b border-(--crt-line) px-4 py-2 text-[10px] text-(--crt-dim)">
+                  <span>
+                    Q{i + 1} {"///"} {item.question.subject.name.toUpperCase()} {"///"} {item.question.topic.name.toUpperCase()}
+                  </span>
+                  <span>
+                    {item.isCorrect === null ? "SKIPPED" : item.isCorrect ? "CORRECT" : "WRONG"}
+                    {" /// "}{formatSeconds(item.timeTakenSeconds)}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-3 px-4 py-4 sm:px-5">
+                  <div className="text-[15px] font-medium leading-7 break-words text-(--crt-ink)">
+                    <MathText text={item.question.prompt} inline />
+                  </div>
+                  <QuestionFigures questionId={item.question.id} images={item.question.images} />
+                  <div className="crt-micro grid gap-2 border border-(--crt-line) p-3 text-[11px] sm:grid-cols-2">
+                    <p className="text-(--crt-dim)">
+                      YOURS: <span className="text-(--crt-ink)">{answerText(item.question.type, item.selectedAnswer)}</span>
+                    </p>
+                    <p className="text-(--crt-dim)">
+                      KEY: <span className="text-(--crt-ink)">{answerText(item.question.type, item.correctAnswer)}</span>
+                    </p>
+                  </div>
+                  {item.solution ? (
+                    <details className="border border-(--crt-line)">
+                      <summary className="crt-micro cursor-pointer px-4 py-2.5 text-[11px] text-(--crt-ink) hover:text-(--crt-red)">
+                        [+] SOLUTION
+                      </summary>
+                      <MathText
+                        text={item.solution}
+                        className="prose-study px-4 py-3 text-sm leading-7 text-(--crt-ink) [&_p]:my-2"
+                      />
+                    </details>
+                  ) : null}
+                  <div className="flex flex-wrap gap-2">
+                    <Link href={item.practicePath} className="crt-btn-line !px-3 !py-1 !text-[10px]">
+                      DRILL IN PRACTICE
+                    </Link>
+                    <Link
+                      href={`/mentor?subject=${item.question.subject.slug}&topic=${item.question.topic.slug}`}
+                      className="crt-btn-line !px-3 !py-1 !text-[10px]"
+                    >
+                      ASK MENTOR
+                    </Link>
+                  </div>
+                </div>
+              </li>
+            ))
+          )}
         </ol>
       </section>
     </div>

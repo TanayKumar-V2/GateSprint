@@ -146,19 +146,43 @@ export default async function ProgressPage() {
         </div>
       </section>
 
+      {recs.data.length > 0 && recs.data[0] ? (
+        <section aria-labelledby="priority-heading" className="flex flex-col gap-4">
+          <h2 id="priority-heading" className="crt-micro text-[11px] text-(--crt-ink)">
+            [ PRIORITY ACTION ]
+          </h2>
+          <div className="border border-(--crt-red) bg-(--crt-red)/5 p-5 sm:p-7">
+            <h3 className="text-xl font-bold uppercase text-(--crt-ink)">
+              START NEXT SESSION &gt;&gt;&gt;
+            </h3>
+            <p className="crt-micro mt-2 text-[11px] text-(--crt-dim)">
+              {recs.data[0]!.subject.name.toUpperCase()} /// {recs.data[0]!.topic.name.toUpperCase()}
+            </p>
+            <div className="mt-6 flex flex-wrap gap-4">
+              <Link href={recs.data[0]!.practicePath} className="crt-btn-red !px-8 !py-3">
+                PRACTICE NOW
+              </Link>
+              <Link href={recs.data[0]!.revisePath} className="crt-btn-line !px-8 !py-3">
+                MENTOR REVIEW
+              </Link>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       <ProgressCharts activity={progress.activity} subjects={progress.subjects} />
 
       <section aria-labelledby="next-heading" className="flex flex-col gap-4">
         <h2 id="next-heading" className="crt-micro text-[11px] text-(--crt-ink)">
           [ RECOMMENDED NEXT ]
         </h2>
-        {recs.data.length === 0 ? (
+        {recs.data.length <= 1 ? (
           <p className="crt-micro text-[11px] text-(--crt-dim)">
             {(recs.note ?? "ALL CAUGHT UP.").toUpperCase()}
           </p>
         ) : (
           <ul className="grid gap-4 md:grid-cols-2">
-            {recs.data.map((r, i) => (
+            {recs.data.slice(1).map((r, i) => (
               <Reveal as="li" key={r.questionId} delay={(i % 4) * 70}>
                 <RecommendationCard rec={r} />
               </Reveal>
@@ -211,6 +235,7 @@ export default async function ProgressPage() {
             accuracy: s.accuracy,
             detail: `${s.attemptedQuestions} / ${s.totalQuestions} questions`,
             href: `/practice?subject=${s.slug}`,
+            isWeak: progress.weakTopics.some(w => w.subjectSlug === s.slug)
           }))}
         />
       </section>
@@ -228,6 +253,7 @@ export default async function ProgressPage() {
             accuracy: t.accuracy,
             detail: `${t.attempts} attempts · ${t.totalQuestions} questions`,
             href: `/practice?subject=${t.subjectSlug}&topic=${t.topicSlug}`,
+            isWeak: progress.weakTopics.some(w => w.topicSlug === t.topicSlug && w.subjectSlug === t.subjectSlug)
           }))}
         />
       </section>

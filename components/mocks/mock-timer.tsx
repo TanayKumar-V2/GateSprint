@@ -17,7 +17,9 @@ export function MockTimer({ endsAt, onExpire }: { endsAt: string; onExpire: () =
   const [left, setLeft] = useState(() => Date.parse(endsAt) - Date.now());
   const fired = useRef(false);
   const cb = useRef(onExpire);
-  cb.current = onExpire;
+  useEffect(() => {
+    cb.current = onExpire;
+  }, [onExpire]);
 
   useEffect(() => {
     const tick = () => {

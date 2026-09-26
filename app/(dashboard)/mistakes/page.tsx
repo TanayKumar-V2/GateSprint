@@ -63,16 +63,22 @@ export default async function MistakesPage({
       {data.length === 0 ? (
         <div className="border border-(--crt-line) bg-(--crt-bg) p-8 text-center sm:p-12">
           <p className="crt-macro text-[clamp(1.4rem,4vw,2.2rem)] text-(--crt-ink)">
-            {total === 0 && stats.open === 0 ? "NO MISSES LOGGED." : "NOTHING HERE."}
+            {tagValue || resolved !== undefined ? "NO MATCHES FOUND." : "NOTHING HERE."}
           </p>
           <p className="crt-micro mt-3 text-[11px] leading-relaxed text-(--crt-dim)">
-            {stats.open === 0
-              ? "WRONG ANSWERS LAND HERE AUTOMATICALLY — KEEP PRACTICING."
-              : "TRY A DIFFERENT FILTER."}
+            {tagValue || resolved !== undefined
+              ? "TRY A DIFFERENT FILTER."
+              : "WRONG ANSWERS LAND HERE AUTOMATICALLY — KEEP PRACTICING."}
           </p>
-          <Link href="/practice" className="crt-btn-red mt-6">
-            PRACTICE &gt;&gt;&gt;
-          </Link>
+          {tagValue || resolved !== undefined ? (
+            <Link href="/mistakes" className="crt-btn-line mt-6">
+              CLEAR FILTERS
+            </Link>
+          ) : (
+            <Link href="/practice" className="crt-btn-red mt-6">
+              PRACTICE &gt;&gt;&gt;
+            </Link>
+          )}
         </div>
       ) : (
         <>

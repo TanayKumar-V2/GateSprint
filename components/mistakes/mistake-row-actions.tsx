@@ -14,8 +14,8 @@ const TAGS = [
 
 export function MistakeRowActions({
   questionId,
-  tag,
-  resolved,
+  tag: initialTag,
+  resolved: initialResolved,
   suggestResolve,
 }: {
   questionId: string;
@@ -27,7 +27,13 @@ export function MistakeRowActions({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [currentTag, setCurrentTag] = useState(initialTag);
+  const [currentResolved, setCurrentResolved] = useState(initialResolved);
+
   async function patch(body: Record<string, unknown>) {
+    if ('tag' in body) setCurrentTag(body.tag as string | null);
+    if ('resolved' in body) setCurrentResolved(body.resolved as boolean);
+    
     setBusy(true);
     setError(null);
     try {
@@ -40,6 +46,9 @@ export function MistakeRowActions({
       router.refresh();
     } catch {
       setError("COULD NOT SAVE — RETRY.");
+      // Rollback
+      if ('tag' in body) setCurrentTag(initialTag);
+      if ('resolved' in body) setCurrentResolved(initialResolved);
     } finally {
       setBusy(false);
     }
@@ -51,7 +60,7 @@ export function MistakeRowActions({
         TAG{" "}
         <select
           aria-label="Mistake reason tag"
-          defaultValue={tag ?? ""}
+          value={currentTag ?? ""}
           disabled={busy}
           onChange={(e) =>
             patch({ tag: e.target.value === "" ? null : e.target.value })
@@ -68,11 +77,11 @@ export function MistakeRowActions({
       <button
         type="button"
         disabled={busy}
-        onClick={() => patch({ resolved: !resolved })}
-        aria-pressed={resolved}
-        className={resolved ? "crt-btn-line !px-3 !py-1 !text-[10px]" : "crt-btn-red !px-3 !py-1 !text-[10px]"}
+        onClick={() => patch({ resolved: !currentResolved })}
+        aria-pressed={currentResolved}
+        className={currentResolved ? "crt-btn-line !px-3 !py-1 !text-[10px]" : "crt-btn-red !px-3 !py-1 !text-[10px]"}
       >
-        {resolved ? "REOPEN" : "RESOLVE"}
+        {currentResolved ? "REOPEN" : "RESOLVE"}
       </button>
       {suggestResolve ? (
         <span className="crt-micro border border-(--crt-line) px-2 py-1 text-[9px] text-(--crt-ink)">

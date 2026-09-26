@@ -386,6 +386,7 @@ export async function listBookmarks(userId: string) {
       prompt: questions.prompt,
       options: questions.options,
       marks: questions.marks,
+      negativeMarks: questions.negativeMarks,
       sourceLabel: questions.sourceLabel,
       subjectId: questions.subjectId,
       topicId: questions.topicId,
@@ -409,6 +410,7 @@ export async function listBookmarks(userId: string) {
     prompt: r.prompt,
     options: r.options,
     marks: r.marks,
+    negativeMarks: r.negativeMarks,
     sourceLabel: r.sourceLabel,
     subject: {
       slug: subjectById.get(r.subjectId)!.slug,

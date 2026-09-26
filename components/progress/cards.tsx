@@ -51,20 +51,18 @@ export function RecommendationCard({ rec }: { rec: Recommendation }) {
           inline
           className="line-clamp-2 text-sm leading-6 text-(--crt-dim) [&_.katex-display]:hidden"
         />
-        <div className="mt-auto flex flex-col gap-2 pt-3 sm:flex-row sm:flex-wrap">
           <Link
             href={rec.practicePath}
-            className="crt-btn-red !px-5 !py-2.5 !text-[11px]"
+            className="crt-btn-red !px-5 !py-2.5 !text-[11px] w-full text-center"
           >
-            PRACTICE THIS
+            PRACTICE THIS &gt;&gt;&gt;
           </Link>
           <Link
             href={rec.revisePath}
-            className="crt-btn-line !px-5 !py-2.5 !text-[11px]"
+            className="crt-micro block mt-2 text-center text-[10px] text-(--crt-ink) underline decoration-(--crt-red) hover:text-(--crt-red)"
           >
-            REVISE WITH MENTOR
+            OR REVISE WITH MENTOR
           </Link>
-        </div>
       </div>
     </article>
   );
@@ -82,8 +80,18 @@ export function BreakdownTable({
     accuracy: number | null;
     detail: string;
     href: string;
+    isWeak?: boolean;
   }[];
 }) {
+  // Sort rows: weak items first, then by accuracy ascending
+  const sortedRows = [...rows].sort((a, b) => {
+    if (a.isWeak && !b.isWeak) return -1;
+    if (!a.isWeak && b.isWeak) return 1;
+    const accA = a.accuracy ?? 1;
+    const accB = b.accuracy ?? 1;
+    return accA - accB;
+  });
+
   return (
     <div className="overflow-x-auto border border-(--crt-line)">
       <table className="crt-micro w-full min-w-[640px] border-collapse text-left text-[11px]">
@@ -98,9 +106,14 @@ export function BreakdownTable({
           </tr>
         </thead>
         <tbody>
-          {rows.map((r) => (
+          {sortedRows.map((r) => (
             <tr key={r.slug} className="border-b border-(--crt-line) text-(--crt-ink) transition-colors last:border-b-0 hover:bg-(--crt-raised)">
-              <td className="px-4 py-3 font-bold">{r.name.toUpperCase()}</td>
+              <td className="px-4 py-3 font-bold">
+                <div className="flex items-center gap-2">
+                  {r.name.toUpperCase()}
+                  {r.isWeak ? <span className="crt-tag crt-tag-red">WEAK</span> : null}
+                </div>
+              </td>
               <td className="px-4 py-3 tabular-nums">{r.attempts}</td>
               <td className="px-4 py-3 tabular-nums">
                 {r.accuracy === null ? (
